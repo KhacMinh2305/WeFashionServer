@@ -1,0 +1,5 @@
+package wefashionserver
+
+func main() {
+
+}
