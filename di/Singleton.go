@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// repository
-var AuthRepo repository.AuthRepository = &repositoryimpl.AuthRepositoryImpl{}
-
 // route
 var Router = gin.Default()
+
+// repository
+var AuthRepo repository.AuthRepository = &repositoryimpl.AuthRepositoryImpl{}
