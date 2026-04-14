@@ -1,6 +1,7 @@
 package database
 
 import (
+	"WeFashionServer/infrastructure/model"
 	"fmt"
 	"log"
 	"os"
@@ -12,6 +13,35 @@ import (
 
 var DB *gorm.DB
 
+func initTable[T interface{}](table *T, err *error) {
+	var tableErr error
+	if tableErr = DB.AutoMigrate(table); tableErr != nil {
+		*err = tableErr
+	}
+}
+
+func initTables() error {
+	var tableErr error
+	initTable(&model.Account{}, &tableErr)
+	initTable(&model.Address{}, &tableErr)
+	initTable(&model.Category{}, &tableErr)
+	initTable(&model.Color{}, &tableErr)
+	initTable(&model.Coupon{}, &tableErr)
+	initTable(&model.FavoriteProduct{}, &tableErr)
+	initTable(&model.FavoriteSku{}, &tableErr)
+	initTable(&model.Order{}, &tableErr)
+	initTable(&model.OrderProductVariant{}, &tableErr)
+	initTable(&model.Payment{}, &tableErr)
+	initTable(&model.Product{}, &tableErr)
+	initTable(&model.ProductVariant{}, &tableErr)
+	initTable(&model.Shipper{}, &tableErr)
+	initTable(&model.ShippingState{}, &tableErr)
+	initTable(&model.Shop{}, &tableErr)
+	initTable(&model.Size{}, &tableErr)
+	initTable(&model.User{}, &tableErr)
+	return tableErr
+}
+
 func Connect() error {
 	err := godotenv.Load()
 	if err != nil {
@@ -21,39 +51,25 @@ func Connect() error {
 
 	envMode := os.Getenv("ENV")
 
-	host := ""
-	port := ""
-	user := ""
-	password := ""
-	dbName := ""
+	var (
+		host     string
+		port     string
+		user     string
+		password string
+		dbName   string
+	)
 
 	if envMode == "prod" {
 		host = os.Getenv("DB_HOST_PROD")
-	} else {
-		host = os.Getenv("DB_HOST_DEV")
-	}
-
-	if envMode == "prod" {
 		port = os.Getenv("DB_PORT_PROD")
-	} else {
-		port = os.Getenv("DB_PORT_DEV")
-	}
-
-	if envMode == "prod" {
 		user = os.Getenv("DB_USER_PROD")
-	} else {
-		user = os.Getenv("DB_USER_DEV")
-	}
-
-	if envMode == "prod" {
 		password = os.Getenv("DB_PASSWORD_PROD")
-	} else {
-		password = os.Getenv("DB_PASSWORD_DEV")
-	}
-
-	if envMode == "prod" {
 		dbName = os.Getenv("DB_NAME_PROD")
 	} else {
+		host = os.Getenv("DB_HOST_DEV")
+		port = os.Getenv("DB_PORT_DEV")
+		user = os.Getenv("DB_USER_DEV")
+		password = os.Getenv("DB_PASSWORD_DEV")
 		dbName = os.Getenv("DB_NAME_DEV")
 	}
 
@@ -65,10 +81,5 @@ func Connect() error {
 		return err
 	}
 
-	// var tableErr error
-	// tableErr = DB.AutoMigrate(&model.Player{})
-	// if tableErr != nil {
-	// 	return tableErr
-	// }
-	return nil
+	return initTables()
 }
