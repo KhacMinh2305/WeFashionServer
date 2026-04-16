@@ -1,4 +1,4 @@
-package route
+package authentication
 
 import (
 	"WeFashionServer/di"

@@ -1,0 +1,36 @@
+package shipper
+
+// import "WeFashionServer/infrastructure/model"
+
+// var MockShipperList = []model.Shipper{
+// 	{Id: 1, Name: "Nguyễn Văn An", ImageUrl: "https://randomuser.me/api/portraits/men/11.jpg", PhoneNumber: "0902000001"},
+// 	{Id: 2, Name: "Trần Thị Bình", ImageUrl: "https://randomuser.me/api/portraits/women/12.jpg", PhoneNumber: "0902000002"},
+// 	{Id: 3, Name: "Lê Văn Cường", ImageUrl: "https://randomuser.me/api/portraits/men/13.jpg", PhoneNumber: "0902000003"},
+// 	{Id: 4, Name: "Phạm Thị Dung", ImageUrl: "https://randomuser.me/api/portraits/women/14.jpg", PhoneNumber: "0902000004"},
+// 	{Id: 5, Name: "Hoàng Văn Em", ImageUrl: "https://randomuser.me/api/portraits/men/15.jpg", PhoneNumber: "0902000005"},
+// 	{Id: 6, Name: "Đỗ Thị Gấm", ImageUrl: "https://randomuser.me/api/portraits/women/16.jpg", PhoneNumber: "0902000006"},
+// 	{Id: 7, Name: "Vũ Văn Hùng", ImageUrl: "https://randomuser.me/api/portraits/men/17.jpg", PhoneNumber: "0902000007"},
+// 	{Id: 8, Name: "Ngô Thị Hạnh", ImageUrl: "https://randomuser.me/api/portraits/women/18.jpg", PhoneNumber: "0902000008"},
+// 	{Id: 9, Name: "Bùi Văn Khoa", ImageUrl: "https://randomuser.me/api/portraits/men/19.jpg", PhoneNumber: "0902000009"},
+// 	{Id: 10, Name: "Phan Thị Lan", ImageUrl: "https://randomuser.me/api/portraits/women/20.jpg", PhoneNumber: "0902000010"},
+// 	{Id: 11, Name: "Lý Văn Minh", ImageUrl: "https://randomuser.me/api/portraits/men/21.jpg", PhoneNumber: "0902000011"},
+// 	{Id: 12, Name: "Đặng Thị Nga", ImageUrl: "https://randomuser.me/api/portraits/women/22.jpg", PhoneNumber: "0902000012"},
+// 	{Id: 13, Name: "Tạ Văn Phúc", ImageUrl: "https://randomuser.me/api/portraits/men/23.jpg", PhoneNumber: "0902000013"},
+// 	{Id: 14, Name: "Lưu Thị Quỳnh", ImageUrl: "https://randomuser.me/api/portraits/women/24.jpg", PhoneNumber: "0902000014"},
+// 	{Id: 15, Name: "Đoàn Văn Sơn", ImageUrl: "https://randomuser.me/api/portraits/men/25.jpg", PhoneNumber: "0902000015"},
+// 	{Id: 16, Name: "Trịnh Thị Trang", ImageUrl: "https://randomuser.me/api/portraits/women/26.jpg", PhoneNumber: "0902000016"},
+// 	{Id: 17, Name: "Phùng Văn Tuấn", ImageUrl: "https://randomuser.me/api/portraits/men/27.jpg", PhoneNumber: "0902000017"},
+// 	{Id: 18, Name: "Mai Thị Uyên", ImageUrl: "https://randomuser.me/api/portraits/women/28.jpg", PhoneNumber: "0902000018"},
+// 	{Id: 19, Name: "Đinh Văn Vinh", ImageUrl: "https://randomuser.me/api/portraits/men/29.jpg", PhoneNumber: "0902000019"},
+// 	{Id: 20, Name: "Nguyễn Thị Xuân", ImageUrl: "https://randomuser.me/api/portraits/women/30.jpg", PhoneNumber: "0902000020"},
+// 	{Id: 21, Name: "Trần Văn Yên", ImageUrl: "https://randomuser.me/api/portraits/men/31.jpg", PhoneNumber: "0902000021"},
+// 	{Id: 22, Name: "Lê Thị Ánh", ImageUrl: "https://randomuser.me/api/portraits/women/32.jpg", PhoneNumber: "0902000022"},
+// 	{Id: 23, Name: "Phạm Văn Bình", ImageUrl: "https://randomuser.me/api/portraits/men/33.jpg", PhoneNumber: "0902000023"},
+// 	{Id: 24, Name: "Hoàng Thị Cúc", ImageUrl: "https://randomuser.me/api/portraits/women/34.jpg", PhoneNumber: "0902000024"},
+// 	{Id: 25, Name: "Đỗ Văn Dũng", ImageUrl: "https://randomuser.me/api/portraits/men/35.jpg", PhoneNumber: "0902000025"},
+// 	{Id: 26, Name: "Vũ Thị Hòa", ImageUrl: "https://randomuser.me/api/portraits/women/36.jpg", PhoneNumber: "0902000026"},
+// 	{Id: 27, Name: "Ngô Văn Khánh", ImageUrl: "https://randomuser.me/api/portraits/men/37.jpg", PhoneNumber: "0902000027"},
+// 	{Id: 28, Name: "Bùi Thị Lệ", ImageUrl: "https://randomuser.me/api/portraits/women/38.jpg", PhoneNumber: "0902000028"},
+// 	{Id: 29, Name: "Phan Văn Mạnh", ImageUrl: "https://randomuser.me/api/portraits/men/39.jpg", PhoneNumber: "0902000029"},
+// 	{Id: 30, Name: "Lý Thị Ngọc", ImageUrl: "https://randomuser.me/api/portraits/women/40.jpg", PhoneNumber: "0902000030"},
+// }

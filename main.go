@@ -1,7 +1,9 @@
 package main
 
 import (
+	"WeFashionServer/di"
 	"WeFashionServer/infrastructure/database"
+	"WeFashionServer/presentation/route/coupon"
 	// "WeFashionServer/mock"
 	// "fmt"
 	// "time"
@@ -11,21 +13,19 @@ func main() {
 
 	database.Connect()
 
-	//Chèn mock data sau 10 giây bằng goroutine
-	// go func() {
-	// 	time.Sleep(10 * time.Second)
-	// 	if err := mock.InsertMockColors(); err != nil {
-	// 		fmt.Println("InsertMockCategories error: " + err.Error())
-	// 	} else {
-	// 		fmt.Println("Mock categories inserted!")
-	// 	}
-	// 	time.Sleep(5 * time.Second)
-	// 	if err := mock.InsertMockSizes(); err != nil {
-	// 		fmt.Println("InsertMockCategories error: " + err.Error())
-	// 	} else {
-	// 		fmt.Println("Mock categories inserted!")
-	// 	}
-	// }()
+	// if err := mock.InsertMockUnderwearsProducts(); err != nil {
+	// 	fmt.Println("InsertMockCategories error: " + err.Error())
+	// } else {
+	// 	fmt.Println("InsertMockUnderwearsProducts inserted!")
+	// }
 
-	// di.Router.Run()
+	// if err := mock.InsertMockUnderwearsVariants(); err != nil {
+	// 	fmt.Println("InsertMockCategories error: " + err.Error())
+	// } else {
+	// 	fmt.Println("InsertMockUnderwearsVariants inserted!")
+	// }
+
+	coupon.RegisterCouponRoutes()
+
+	di.Router.Run()
 }
