@@ -47,27 +47,120 @@
 ### 3.1. Lấy tất cả coupon
 - **Endpoint:** `GET /api/coupons`
 - **Header:** `Authorization: Bearer <token>`
-- **Response:** Danh sách coupon toàn hệ thống.
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "coupons": [
+      {
+        "id": 1,
+        "shop_id": 1,
+        "name": "Giảm 10%",
+        "description": "Giảm giá cho đơn hàng đầu tiên",
+        "discount": 10,
+        "expired_at": "2026-12-31T23:59:59Z"
+      }
+    ]
+  }
+}
+```
+
 
 ### 3.2. Lấy coupon theo id
 - **Endpoint:** `GET /api/coupons/:id`
 - **Header:** `Authorization: Bearer <token>`
-- **Response:** Thông tin coupon theo id.
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "id": 1,
+    "shop_id": 1,
+    "name": "Giảm 10%",
+    "description": "Giảm giá cho đơn hàng đầu tiên",
+    "discount": 10,
+    "expired_at": "2026-12-31T23:59:59Z"
+  }
+}
+```
+
 
 ### 3.3. Lấy coupon của shop
 - **Endpoint:** `GET /api/coupons/shop?shop_id=<id>`
 - **Header:** `Authorization: Bearer <token>`
-- **Response:** Danh sách coupon của shop.
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "shop_id": 1,
+    "coupons": [
+      {
+        "id": 1,
+        "shop_id": 1,
+        "name": "Giảm 10%",
+        "description": "Giảm giá cho đơn hàng đầu tiên",
+        "discount": 10,
+        "expired_at": "2026-12-31T23:59:59Z"
+      }
+    ]
+  }
+}
+```
+
 
 ### 3.4. Lấy coupon khả dụng cho user
 - **Endpoint:** `GET /api/coupons/user?user_id=<id>`
 - **Header:** `Authorization: Bearer <token>`
-- **Response:** Danh sách coupon khả dụng cho user.
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "user_id": 2,
+    "coupons": [
+      {
+        "id": 1,
+        "shop_id": -1,
+        "name": "Giảm 10% toàn hệ thống",
+        "description": "Áp dụng cho mọi đơn hàng",
+        "discount": 10,
+        "expired_at": "2026-12-31T23:59:59Z"
+      }
+    ]
+  }
+}
+```
 
 ### 3.5. Lấy coupon cho đơn hàng của shop
 - **Endpoint:** `GET /api/coupons/order?shop_id=<id>`
 - **Header:** `Authorization: Bearer <token>`
 - **Response:** Danh sách coupon áp dụng cho đơn hàng của shop.
+
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "coupons": [
+      {
+        "id": 1,
+        "shop_id": 1,
+        "name": "Giảm 10%",
+        "description": "Giảm giá cho đơn hàng đầu tiên",
+        "discount": 10,
+        "expired_at": "2026-12-31T23:59:59Z"
+      }
+    ]
+  }
+}
+```
 
 ## 4. Category APIs
 
@@ -160,7 +253,6 @@
 
 ---
 - Tất cả các API coupon đều yêu cầu token hợp lệ (JWT, truyền qua header Authorization).
-- Nếu id shop/user không tồn tại sẽ trả về lỗi 404.
 - Response lỗi dạng:
 ```json
 {
