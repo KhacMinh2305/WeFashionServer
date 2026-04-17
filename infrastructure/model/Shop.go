@@ -7,5 +7,7 @@ type Shop struct {
 	Email       string  `gorm:"not null;index" json:"email"`
 	PhoneNumber string  `gorm:"not null;index" json:"phone_number"`
 	Bio         string  `gorm:"not null" json:"bio"`
+	RateAmount  int     `gorm:"not null" json:"rate_amount"`
 	Rating      float32 `gorm:"not null;index" json:"rating"`
+	Followers   int     `gorm:"not null" json:"followers"`
 }
