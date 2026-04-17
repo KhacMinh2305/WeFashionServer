@@ -6,9 +6,14 @@ import (
 )
 
 func RegisterCouponRoutes() {
+	// Route: /api/coupons (all coupons)
 	di.Router.GET("api/coupons", service.GetCoupons)
-	di.Router.GET("api/coupons/:id", service.GetCouponsById)
-	di.Router.GET("api/coupons/shop/:shop_id", service.GetCouponsOfShopByShopId)
-	di.Router.GET("api/coupons/user/:user_id", service.GetAvailableCouponsForUserByUserId)
-	di.Router.GET("api/coupons/order/shop/:shop_id", service.GetCouponsForOrderOfShopByShopId)
+	// Route: /api/coupons/:id (get coupon by id)
+	di.Router.GET("api/coupons/:id", service.GetCouponById)
+	// Route: /api/coupons/shop (get coupons by shop_id)
+	di.Router.GET("api/coupons/shop", service.GetCouponsOfShopByShopId)
+	// Route: /api/coupons/user (get coupons by user_id)
+	di.Router.GET("api/coupons/user", service.GetAvailableCouponsForUserByUserId)
+	// Route: /api/coupons/order (get coupons for order by shop_id)
+	di.Router.GET("api/coupons/order", service.GetCouponsForOrderOfShopByShopId)
 }

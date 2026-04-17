@@ -68,3 +68,36 @@ func FetchToken(ctx *gin.Context) {
 		Data:       newToken,
 	})
 }
+
+
+// Use to validate token in header of request, return user_id if valid, otherwise return error
+func ValidateToken(ctx *gin.Context) (string, error) {
+	authHeader := ctx.GetHeader("Authorization")
+	if authHeader == "" {
+		return "", errors.New("Authorization header missing")
+	}
+
+	var tokenString string
+	if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+		tokenString = authHeader[7:]
+	} else {
+		return "", errors.New("Invalid Authorization header format")
+	}
+
+	parsedToken, parseErr := di.AuthRepo.ParseToken(tokenString)
+	if parseErr != nil {
+		return "", errors.New("Cannot parse token: " + parseErr.Error())
+	}
+
+	claims, ok := parsedToken.Claims.(jwt.MapClaims)
+	if !ok || !parsedToken.Valid {
+		return "", errors.New("Invalid token claims or token is not valid")
+	}
+
+	userID, ok := claims["user_id"].(string)
+	if !ok {
+		return "", errors.New("user_id not found in token claims")
+	}
+
+	return userID, nil
+}
