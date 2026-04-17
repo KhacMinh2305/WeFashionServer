@@ -76,6 +76,53 @@
 - **Header:** `Authorization: Bearer <token>`
 - **Response:** Danh sách coupon áp dụng cho đơn hàng của shop.
 
+## 4. Category APIs
+
+### 4.1. Lấy tất cả category
+- **Endpoint:** `GET /api/category`
+- **Header:** `Authorization: Bearer <token>`
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "categories": [
+      { "id": 1, "name": "..." },
+      { "id": 2, "name": "..." }
+    ]
+  }
+}
+```
+
+### 4.2. Lấy category theo id
+- **Endpoint:** `GET /api/category?category_id=<id>`
+- **Header:** `Authorization: Bearer <token>`
+- **Response thành công (tìm thấy):**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": { "id": 1, "name": "..." }
+}
+```
+- **Response thành công (không tìm thấy):**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": null
+}
+```
+- **Response lỗi:**
+```json
+{
+  "status_code": <mã lỗi>,
+  "error": "...",
+  "detail": "..."
+}
+```
+
 ---
 - Tất cả các API coupon đều yêu cầu token hợp lệ (JWT, truyền qua header Authorization).
 - Nếu id shop/user không tồn tại sẽ trả về lỗi 404.
