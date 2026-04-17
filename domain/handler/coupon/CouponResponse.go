@@ -1,4 +1,4 @@
-package CouponResponse
+package coupon
 
 type CouponResponse struct {
 	Id            int     `json:"id"`

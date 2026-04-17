@@ -2,11 +2,11 @@ package authentication
 
 import (
 	"WeFashionServer/di"
-	"WeFashionServer/domain/service"
+	"WeFashionServer/domain/handler/authentication"
 )
 
 func RegisterAuthenticationRoute() {
-	di.Router.POST("api/auth", service.FetchToken)
+	di.Router.POST("api/auth", authentication.FetchToken)
 }
 
 /***********************info***********************/

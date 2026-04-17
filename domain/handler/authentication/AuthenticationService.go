@@ -1,4 +1,4 @@
-package service
+package authentication
 
 import (
 	"WeFashionServer/di"
@@ -68,7 +68,6 @@ func FetchToken(ctx *gin.Context) {
 		Data:       newToken,
 	})
 }
-
 
 // Use to validate token in header of request, return user_id if valid, otherwise return error
 func ValidateToken(ctx *gin.Context) (string, error) {
