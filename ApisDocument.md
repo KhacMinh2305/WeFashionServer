@@ -2,19 +2,19 @@
 
 ## 1. Cấu hình .env
 
-| Biến                | Ý nghĩa                        | Ví dụ giá trị                  |
+| Biến                | Ý nghĩa                        | Ví dụ giá trị                 |
 |---------------------|--------------------------------|-------------------------------|
-| DB_HOST_DEV         | Địa chỉ host DB (dev)          | localhost                     |
-| DB_PORT_DEV         | Cổng DB (dev)                  | 5432                          |
-| DB_USER_DEV         | Tên user DB (dev)              | postgres                      |
-| DB_PASSWORD_DEV     | Mật khẩu DB (dev)              | Minh23012003?                 |
-| DB_NAME_DEV         | Tên database (dev)             | WeFashion                     |
+| DB_HOST_DEV         | Địa chỉ host DB (dev)          | localhost address             |
+| DB_PORT_DEV         | Cổng DB (dev)                  | Local postgres port           |
+| DB_USER_DEV         | Tên user DB (dev)              | Local postgres account        |
+| DB_PASSWORD_DEV     | Mật khẩu DB (dev)              | Local postgres password       |
+| DB_NAME_DEV         | Tên database (dev)             | Database name                 |
 | DB_HOST_PROD        | Địa chỉ host DB (prod)         | ...                           |
 | DB_PORT_PROD        | Cổng DB (prod)                 | ...                           |
 | DB_USER_PROD        | Tên user DB (prod)             | ...                           |
 | DB_PASSWORD_PROD    | Mật khẩu DB (prod)             | ...                           |
 | DB_NAME_PROD        | Tên database (prod)            | WeFashion                     |
-| JWT_PRIVATE_KEY     | Secret key cho JWT             | WeFashionJWTPrivateKey...     |
+| JWT_PRIVATE_KEY     | Secret key cho JWT             | YourSecretKeyHere             |
 | ENV                 | Môi trường chạy (dev/prod)     | dev                           |
 
 ## 2. Authentication APIs
@@ -40,14 +40,7 @@
   }
 }
 ```
-- **Response lỗi:**
-```json
-{
-  "status_code": 401,
-  "error": "...",
-  "detail": "..."
-}
-```
+
 
 ## 3. Coupon APIs
 
@@ -114,12 +107,54 @@
   "data": null
 }
 ```
-- **Response lỗi:**
+
+## 5. Shop APIs
+
+### 5.1. Lấy tất cả shop
+- **Endpoint:** `GET /api/shop`
+- **Header:** `Authorization: Bearer <token>`
+- **Response thành công:**
 ```json
 {
-  "status_code": <mã lỗi>,
-  "error": "...",
-  "detail": "..."
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "shops": [
+      {
+        "id": 1,
+        "name": "...",
+        "avatar_url": "...",
+        "email": "...",
+        "phone_number": "...",
+        "bio": "...",
+        "rate_amount": 10,
+        "rating": 4.5,
+        "followers": 100
+      }
+    ]
+  }
+}
+```
+
+### 5.2. Follow/Unfollow shop
+- **Endpoint:** `PUT /api/shop/follow?shop_id=<id>&follow=<true|false>`
+- **Header:** `Authorization: Bearer <token>`
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "id": 1,
+    "name": "...",
+    "avatar_url": "...",
+    "email": "...",
+    "phone_number": "...",
+    "bio": "...",
+    "rate_amount": 10,
+    "rating": 4.5,
+    "followers": 101
+  }
 }
 ```
 
