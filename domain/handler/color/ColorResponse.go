@@ -1,4 +1,3 @@
-
 package color
 
 type ColorResponse struct {

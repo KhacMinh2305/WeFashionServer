@@ -1,0 +1,33 @@
+Đây là 1 tập hợp file mô tả các rules về logic của api cần phải tuân theo khi tạo api mới:
+
+1. Nghiêm cấm tự ý chỉnh sửa các files, folders hay logic chỗ khác không liên quan tới logic cần handle.
+2. Khi viết logic mà có nhu cầu cần sử dụng những struct đã có trong file Singleton.go của thư mục di thì phải lấy model trong đó 
+ra để sử dụng chứ không phải tạo mới.
+3. Hàm đăng kí route phải có format kiểu như thế này: 
+
+// Route luôn bắt đầu với "api/<suffix>"
+// Đây là example cho hàm đăng kí route 
+func Register<model_name>Routes() {
+	di.Router.GET("api/shop", shop.GetShops)
+	di.Router.PUT("api/shop/follow", shop.UpdateShopFollow)
+}
+
+4. Các hàm handle request sẽ có dạng như thế này: 
+
+func GetShops(ctx *gin.Context) {
+    // Logic handle here
+}
+
+5. Tất cả các request có yêu cầu xử lý dữ liệu thì đều dùng database, nghiêm cấm và không bao giờ được dùng thư mục test
+6. Dưới đây là các lưu ý khi viết logic handle request: 
+- Tất cả các hàm request tới đều đi kèm token, và luôn phải validate token cho mỗi request. 
+- Tất cả các request gửi lên có param hoặc query đều phải check kiểu giá trị hợp lệ, đặc biệt với các loại id thì đều phải là kiểu int
+- Đối với các thông tin gửi lên thông qua request loại GET có dạng lấy data theo id, trong trường hợp không tìm thấy dữ liệu cho request đó
+thì vẫn phải trả về response success nhưng data là null. Cái này áp dụng cho những loại request chủ yếu dùng cho mục đích lấy 1 record thông qua
+id, mà request chỉ liên quan đến duy nhất loại record đó.
+
+- Tuy nhiên, đối với các request mà có gửi id lên nhưng với dạng đi kèm, chẳng hạn như id đó là id của 1 loại record A, còn target của 
+request là 1 loại record B, nhưng B liên quan đến A, thì lúc này cần phải check xem liệu có record A nào trong bảng match với id đó không, 
+nếu không thì phải trả về lỗi. 
+- Khi viết logic, cố gắng viết clean để không phải refactor lại, hàm nào rõ ràng hàm đó, các helper function cần thì cũng phải viết một
+các chính xác. Ngoài ra, cố gắng tách các hàm có tính tái sử dụng ra để đỡ duplicate code. 

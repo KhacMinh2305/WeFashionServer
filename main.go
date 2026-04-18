@@ -4,8 +4,8 @@ import (
 	"WeFashionServer/di"
 	"WeFashionServer/infrastructure/database"
 	"WeFashionServer/presentation/route/authentication"
-	"WeFashionServer/presentation/route/color"
 	"WeFashionServer/presentation/route/category"
+	"WeFashionServer/presentation/route/color"
 	"WeFashionServer/presentation/route/coupon"
 	"WeFashionServer/presentation/route/shop"
 )

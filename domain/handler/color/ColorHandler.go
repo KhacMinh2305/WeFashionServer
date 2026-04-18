@@ -1,10 +1,8 @@
-
-package handler
+package color
 
 import (
 	"WeFashionServer/domain/entity"
 	"WeFashionServer/domain/handler/authentication"
-	"WeFashionServer/domain/handler/color"
 	"WeFashionServer/infrastructure/database"
 	"WeFashionServer/infrastructure/model"
 	"net/http"
@@ -33,7 +31,7 @@ func GetColors(ctx *gin.Context) {
 		var colorModel model.Color
 		if err := database.DB.First(&colorModel, id).Error; err != nil {
 			// Not found: return success with data = null
-			ctx.JSON(http.StatusOK, entity.SuccessReponse[*color.ColorResponse]{
+			ctx.JSON(http.StatusOK, entity.SuccessReponse[*ColorResponse]{
 				StatusCode: http.StatusOK,
 				Time:       time.Now(),
 				Data:       nil,
@@ -68,10 +66,10 @@ func GetColors(ctx *gin.Context) {
 			Rgb: c.Rgb,
 		})
 	}
-	ctx.JSON(http.StatusOK, entity.SuccessReponse[color.ColorListResponse]{
+	ctx.JSON(http.StatusOK, entity.SuccessReponse[ColorListResponse]{
 		StatusCode: http.StatusOK,
 		Time:       time.Now(),
-		Data:       color.ColorListResponse{Colors: resp},
+		Data:       ColorListResponse{Colors: resp},
 	})
 }
 

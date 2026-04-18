@@ -1,13 +1,11 @@
-
 package color
 
 import (
-	"WeFashionServer/domain/handler/color"
-	"github.com/gin-gonic/gin"
+	"WeFashionServer/di"
+	colorHandler "WeFashionServer/domain/handler/color"
 )
 
 // GET /api/color?color_id=...
 func RegisterColorRoutes() {
-	router.GET("api/color", color.GetColors)
+	di.Router.GET("api/color", colorHandler.GetColors)
 }
-

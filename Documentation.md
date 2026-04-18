@@ -251,6 +251,45 @@
 }
 ```
 
+## 6. Color APIs
+
+### 6.1. Lấy tất cả màu sắc
+- **Endpoint:** `GET /api/color`
+- **Header:** `Authorization: Bearer <token>`
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "colors": [
+      { "id": 1, "rgb": "23,1,23" },
+      { "id": 2, "rgb": "23,1,23" }
+    ]
+  }
+}
+```
+
+### 6.2. Lấy màu sắc theo id
+- **Endpoint:** `GET /api/color?color_id=<id>`
+- **Header:** `Authorization: Bearer <token>`
+- **Response thành công (tìm thấy):**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": { "id": 1, "rgb": "23,1,23" }
+}
+```
+- **Response thành công (không tìm thấy):**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": null
+}
+```
+
 ---
 - Tất cả các API coupon đều yêu cầu token hợp lệ (JWT, truyền qua header Authorization).
 - Response lỗi dạng:

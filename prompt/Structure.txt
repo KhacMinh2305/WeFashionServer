@@ -1,0 +1,25 @@
+Các hướng dẫn dưới đây mô tả cấu trúc dự án phục vụ cho việc dễ mở rộng và thêm các api mới: 
+
+Dưới đây là 1 số thư mục như sau : 
+
+1. di : 
+1.1 Singleton.go: 
+Trong file này khai báo và khởi tạo các object singleton cho toàn bộ app sử dụng, tất cả mọi nơi có sử dụng tới các struct hoặc interface 
+đã có trong file này thì phải lấy những object này ra và sử dụng, không được tạo mới. 
+
+2. domain: 
+2.1 entity: 
+Trong này có 2 file là SuccessResponse và ErrorResponse, tất cả các response trả về đều phải sử dụng 2 struct này làm wrapper. 
+
+2.2 handler:
+Trong này chứa các thư mục con, là nơi chứa logic handle request. Mỗi thư mục này tương ứng với một struct trong phần model của thư mục infrastructure.
+trong đó bao gồm 2 file : 
+- file chứa các func handle request
+- file chứa các object response cho request đó. 
+
+3. presentation:
+3.1 route: 
+Trong thư mục này định nghĩa function request khai báo các request được nhóm lại theo từng loại model.
+
+Trên đây là những thư mục mày cần lưu ý khi viết thêm api cho các model. Mỗi một set api liên quan đến 1 model mới ra đều cần có các files 
+và các thư mục như format trên. Điều này là bắt buộc phải có. 
