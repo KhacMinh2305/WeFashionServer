@@ -3,6 +3,7 @@ package main
 import (
 	"WeFashionServer/di"
 	"WeFashionServer/infrastructure/database"
+	"WeFashionServer/presentation/route/account"
 	"WeFashionServer/presentation/route/authentication"
 	"WeFashionServer/presentation/route/category"
 	"WeFashionServer/presentation/route/color"
@@ -25,4 +26,7 @@ func registerRoutes() {
 	category.RegisterCategoryRoutes()
 	shop.RegisterShopRoutes()
 	coupon.RegisterCouponRoutes()
+
+	// important
+	account.RegisterAccountRoutes()
 }
