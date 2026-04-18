@@ -1,14 +1,14 @@
-# WeFashionServer API & .env Documentation
+# WeFashionServer API & Config Documentation
 
 ## 1. Cấu hình .env
 
 | Biến                | Ý nghĩa                        | Ví dụ giá trị                 |
 |---------------------|--------------------------------|-------------------------------|
-| DB_HOST_DEV         | Địa chỉ host DB (dev)          | localhost address             |
-| DB_PORT_DEV         | Cổng DB (dev)                  | Local postgres port           |
-| DB_USER_DEV         | Tên user DB (dev)              | Local postgres account        |
-| DB_PASSWORD_DEV     | Mật khẩu DB (dev)              | Local postgres password       |
-| DB_NAME_DEV         | Tên database (dev)             | Database name                 |
+| DB_HOST_DEV         | Địa chỉ host DB (dev)          | localhost                     |
+| DB_PORT_DEV         | Cổng DB (dev)                  | 5432                          |
+| DB_USER_DEV         | Tên user DB (dev)              | postgres                      |
+| DB_PASSWORD_DEV     | Mật khẩu DB (dev)              | 123456789                     |
+| DB_NAME_DEV         | Tên database (dev)             | WeFashion                     |
 | DB_HOST_PROD        | Địa chỉ host DB (prod)         | ...                           |
 | DB_PORT_PROD        | Cổng DB (prod)                 | ...                           |
 | DB_USER_PROD        | Tên user DB (prod)             | ...                           |
