@@ -9,6 +9,7 @@ import (
 	"WeFashionServer/presentation/route/color"
 	"WeFashionServer/presentation/route/coupon"
 	"WeFashionServer/presentation/route/shop"
+	"WeFashionServer/presentation/route/user"
 )
 
 func main() {
@@ -29,4 +30,5 @@ func registerRoutes() {
 
 	// important
 	account.RegisterAccountRoutes()
+	user.RegisterUserRoutes()
 }

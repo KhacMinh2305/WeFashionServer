@@ -31,3 +31,7 @@ request là 1 loại record B, nhưng B liên quan đến A, thì lúc này cầ
 nếu không thì phải trả về lỗi. 
 - Khi viết logic, cố gắng viết clean để không phải refactor lại, hàm nào rõ ràng hàm đó, các helper function cần thì cũng phải viết một
 các chính xác. Ngoài ra, cố gắng tách các hàm có tính tái sử dụng ra để đỡ duplicate code. 
+
+- Khi viết logic của 1 hàm, đảm bảo tính "single responsbility" của hàm đó. Có nghĩa là nếu như 1 hàm
+có nhiều logic cần check, thì hãy tách hàm lớn đó ra thành các hàm nhỏ hơn, mỗi hàm chỉ phục vụ đúng 1 
+mục đính. 
