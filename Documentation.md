@@ -410,6 +410,65 @@
 }
 ```
 
+## 8. User APIs
+
+### 8.1. Lấy thông tin user theo id
+- **Endpoint:** `GET /api/user?user_id=<id>`
+- **Header:** `Authorization: Bearer <token>`
+- **Response thành công (tìm thấy):**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "id": 1,
+    "name": "username",
+    "avatar_url": "...",
+    "email": "user@example.com",
+    "phone_number": "",
+    "bio": ""
+  }
+}
+```
+- **Response thành công (không tìm thấy):**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": null
+}
+```
+
+### 8.2. Cập nhật thông tin user
+- **Endpoint:** `POST /api/user/:id/update`
+- **Header:** `Authorization: Bearer <token>`
+- **Body:**
+```json
+{
+  "id": 1,
+  "name": "username",
+  "avatar_url": "...",
+  "email": "user@example.com",
+  "phone_number": "",
+  "bio": ""
+}
+```
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "id": 1,
+    "name": "username",
+    "avatar_url": "...",
+    "email": "user@example.com",
+    "phone_number": "",
+    "bio": ""
+  }
+}
+```
+
 ---
 - Tất cả các API đều yêu cầu token hợp lệ (JWT, truyền qua header Authorization).
 - Response lỗi dạng:
