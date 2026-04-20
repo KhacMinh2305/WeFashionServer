@@ -4,6 +4,7 @@ import (
 	"WeFashionServer/di"
 	"WeFashionServer/infrastructure/database"
 	"WeFashionServer/presentation/route/account"
+	"WeFashionServer/presentation/route/address"
 	"WeFashionServer/presentation/route/authentication"
 	"WeFashionServer/presentation/route/category"
 	"WeFashionServer/presentation/route/color"
@@ -31,4 +32,5 @@ func registerRoutes() {
 	// important
 	account.RegisterAccountRoutes()
 	user.RegisterUserRoutes()
+	address.RegisterAddressRoutes()
 }

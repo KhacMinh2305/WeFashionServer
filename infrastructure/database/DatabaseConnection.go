@@ -28,7 +28,7 @@ func initTables() error {
 	initTable(&model.Color{}, &tableErr)
 	initTable(&model.Coupon{}, &tableErr)
 	initTable(&model.FavoriteProduct{}, &tableErr)
-	initTable(&model.FavoriteSku{}, &tableErr)
+	initTable(&model.Cart{}, &tableErr)
 	initTable(&model.Order{}, &tableErr)
 	initTable(&model.OrderProductVariant{}, &tableErr)
 	initTable(&model.Payment{}, &tableErr)
