@@ -290,8 +290,128 @@
 }
 ```
 
+## 7. Account APIs
+
+### 7.1. Đăng ký tài khoản
+- **Endpoint:** `POST /api/account/register`
+- **Header:** `Authorization: Bearer <token>`
+- **Body:**
+```json
+{
+  "email": "user@example.com",
+  "username": "username",
+  "password": "password"
+}
+```
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "id": 1,
+    "name": "username",
+    "avatar_url": "...",
+    "email": "user@example.com",
+    "phone_number": "",
+    "bio": ""
+  }
+}
+```
+
+### 7.2. Đăng nhập tài khoản
+- **Endpoint:** `POST /api/account/login`
+- **Header:** `Authorization: Bearer <token>`
+- **Body:**
+```json
+{
+  "username": "username",
+  "password": "password"
+}
+```
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "id": 1,
+    "name": "username",
+    "avatar_url": "...",
+    "email": "user@example.com",
+    "phone_number": "",
+    "bio": ""
+  }
+}
+```
+
+### 7.3. Quên mật khẩu (gửi mã xác thực)
+- **Endpoint:** `POST /api/account/forgot-password`
+- **Header:** `Authorization: Bearer <token>`
+- **Body:**
+```json
+{
+  "email": "user@example.com"
+}
+```
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "credential": "code"
+  }
+}
+```
+
+### 7.4. Xác thực mã quên mật khẩu
+- **Endpoint:** `POST /api/account/forgot-password/validate`
+- **Header:** `Authorization: Bearer <token>`
+- **Body:**
+```json
+{
+  "email": "user@example.com",
+  "code": "1234",
+  "credential": "code"
+}
+```
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "is_valid": true,
+    "Detail": "Correct code"
+  }
+}
+```
+
+### 7.5. Đổi mật khẩu
+- **Endpoint:** `POST /api/account/change-password`
+- **Header:** `Authorization: Bearer <token>`
+- **Body:**
+```json
+{
+  "username": "username",
+  "old_password": "old_raw_password",
+  "new_password": "new_raw_password"
+}
+```
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "message": "Password changed successfully"
+  }
+}
+```
+
 ---
-- Tất cả các API coupon đều yêu cầu token hợp lệ (JWT, truyền qua header Authorization).
+- Tất cả các API đều yêu cầu token hợp lệ (JWT, truyền qua header Authorization).
 - Response lỗi dạng:
 ```json
 {

@@ -452,3 +452,85 @@ func ValidateCode(ctx *gin.Context) {
 		},
 	})
 }
+
+func ChangePassword(ctx *gin.Context) {
+	// Validate token first
+	if !validateTokenOrAbort(ctx) {
+		return
+	}
+
+	// Parse request body
+	var req struct {
+		Username    string `json:"username"`
+		OldPassword string `json:"old_password"`
+		NewPassword string `json:"new_password"`
+	}
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, entity.ErrorResponse{
+			StatusCode: http.StatusBadRequest,
+			Error:      "Invalid request body",
+			Detail:     err.Error(),
+		})
+		return
+	}
+
+	// Check for empty fields
+	if strings.TrimSpace(req.Username) == "" || strings.TrimSpace(req.OldPassword) == "" || strings.TrimSpace(req.NewPassword) == "" {
+		ctx.JSON(http.StatusBadRequest, entity.ErrorResponse{
+			StatusCode: http.StatusBadRequest,
+			Error:      "Missing required fields",
+			Detail:     "Username, old_password, and new_password are required.",
+		})
+		return
+	}
+
+	// Check if account exists
+	var account model.Account
+	if err := database.DB.Where("username = ?", req.Username).First(&account).Error; err != nil {
+		ctx.JSON(http.StatusNotFound, entity.ErrorResponse{
+			StatusCode: http.StatusNotFound,
+			Error:      "Username not found",
+			Detail:     "Account with this username does not exist.",
+		})
+		return
+	}
+
+	// Check old password
+	if err := bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(req.OldPassword)); err != nil {
+		ctx.JSON(http.StatusUnauthorized, entity.ErrorResponse{
+			StatusCode: http.StatusUnauthorized,
+			Error:      "Invalid old password",
+			Detail:     "Old password is incorrect.",
+		})
+		return
+	}
+
+	// Hash new password
+	hashed, err := hash(req.NewPassword)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, entity.ErrorResponse{
+			StatusCode: http.StatusInternalServerError,
+			Error:      "Hash password failed",
+			Detail:     err.Error(),
+		})
+		return
+	}
+
+	// Update password in database
+	if err := database.DB.Model(&account).Update("password", hashed).Error; err != nil {
+		ctx.JSON(http.StatusInternalServerError, entity.ErrorResponse{
+			StatusCode: http.StatusInternalServerError,
+			Error:      "Update password failed",
+			Detail:     err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, entity.SuccessReponse[map[string]interface{}]{
+		StatusCode: http.StatusOK,
+		Time:       time.Now(),
+		Data: map[string]interface{}{
+			"message": "Password changed successfully",
+		},
+	})
+}
