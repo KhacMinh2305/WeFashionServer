@@ -469,6 +469,117 @@
 }
 ```
 
+
+# 9. Address APIs
+
+### 9.1. Lấy danh sách địa chỉ của user
+- **Endpoint:** `GET /api/address/user/:id`
+- **Header:** `Authorization: Bearer <token>`
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "user": {
+      "id": 10,
+      "name": "hehehe",
+      "avatar_url": "hehehe.png",
+      "email": "hehehe@gmail.com",
+      "phone_number": "2305",
+      "bio": "Hahahahahahahahaha"
+    },
+    "addresses": [ /* danh sách địa chỉ */ ]
+  }
+}
+```
+
+### 9.2. Lấy địa chỉ theo id
+- **Endpoint:** `GET /api/address/:id`
+- **Header:** `Authorization: Bearer <token>`
+- **Response thành công (tìm thấy):**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": { /* thông tin address */ }
+}
+```
+- **Response thành công (không tìm thấy):**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": null
+}
+```
+
+### 9.3. Tạo địa chỉ mới
+- **Endpoint:** `POST /api/address/create`
+- **Header:** `Authorization: Bearer <token>`
+- **Body:**
+```json
+{
+  "name": "Nhà riêng",
+  "ward": "Phường 1",
+  "district": "Quận 3",
+  "city": "TP.HCM",
+  "detail": "123/45 Đường Lê Lợi",
+  "latitude": 10.762622,
+  "longitude": 106.660172,
+  "receiver_name": "Nguyễn Văn A",
+  "phone": "0909123456",
+  "is_default": true,
+  "user_id": 10
+}
+```
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": { /* thông tin address vừa tạo */ }
+}
+```
+
+### 9.4. Cập nhật địa chỉ
+- **Endpoint:** `PUT /api/address/update?address_id=<id>`
+- **Header:** `Authorization: Bearer <token>`
+- **Body:** (giống như tạo mới)
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": { /* thông tin address đã cập nhật */ }
+}
+```
+
+### 9.5. Xóa địa chỉ
+- **Endpoint:** `DELETE /api/address/:id/delete`
+- **Header:** `Authorization: Bearer <token>`
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "message": "Address deleted successfully"
+  }
+}
+```
+
+---
+- Response lỗi dạng:
+```json
+{
+  "status_code": <mã lỗi>,
+  "error": "...",
+  "detail": "..."
+}
+```
+
+
 ---
 - Tất cả các API đều yêu cầu token hợp lệ (JWT, truyền qua header Authorization).
 - Response lỗi dạng:
