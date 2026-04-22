@@ -569,6 +569,109 @@
 }
 ```
 
+
+### 10. Product APIs
+
+#### 10.1. Lấy danh sách sản phẩm
+- **Endpoint:** `GET /api/product`
+- **Header:** `Authorization: Bearer <token>`
+- **Query:** `limit`, `offset` (tùy chọn)
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "title": "general",
+    "limit": 10,
+    "offset": 0,
+    "data": [
+      {
+        "id": 1,
+        "name": "...",
+        "image_url": "...",
+        "description": "...",
+        "rating": 4.5,
+        "sold_amount": 100,
+        "liked_amount": 50,
+        "category_id": 1,
+        "shop_id": 1
+      }
+    ]
+  }
+}
+```
+
+#### 10.2. Lấy sản phẩm top rated
+- **Endpoint:** `GET /api/product/top-rated`
+- **Header:** `Authorization: Bearer <token>`
+- **Query:** `limit`, `offset` (tùy chọn)
+- **Response:** Giống 10.1, chỉ khác trường `title` là `top-rated`.
+
+#### 10.3. Lấy sản phẩm bán chạy nhất
+- **Endpoint:** `GET /api/product/best-seller`
+- **Header:** `Authorization: Bearer <token>`
+- **Query:** `limit`, `offset` (tùy chọn)
+- **Response:** Giống 10.1, chỉ khác trường `title` là `best-seller`.
+
+#### 10.4. Lấy sản phẩm được thích nhiều nhất
+- **Endpoint:** `GET /api/product/most-liked`
+- **Header:** `Authorization: Bearer <token>`
+- **Query:** `limit`, `offset` (tùy chọn)
+- **Response:** Giống 10.1, chỉ khác trường `title` là `most-liked`.
+
+#### 10.5. Lấy chi tiết sản phẩm theo id
+- **Endpoint:** `GET /api/product/:id/details`
+- **Header:** `Authorization: Bearer <token>`
+- **Response thành công (tìm thấy):**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "product": {
+      "id": 1,
+      "name": "...",
+      "image_url": "...",
+      "description": "...",
+      "rating": 4.5,
+      "sold_amount": 100,
+      "liked_amount": 50,
+      "category_id": 1
+    },
+    "sku": [
+      {
+        "sku": 101,
+        "amount": 10,
+        "price": 199000,
+        "size": { "id": 1, "name": "M" },
+        "color": { "id": 2, "rgb": "255,255,255" }
+      }
+    ],
+    "shop": {
+      "id": 1,
+      "name": "Shop A",
+      "avatar_url": "...",
+      "email": "shopa@email.com",
+      "phone_number": "0123456789",
+      "bio": "Shop thời trang",
+      "rate_amount": 10,
+      "rating": 4.5,
+      "followers": 100
+    }
+  }
+}
+```
+- **Response thành công (không tìm thấy):**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": null
+}
+```
+
+
 ---
 - Response lỗi dạng:
 ```json

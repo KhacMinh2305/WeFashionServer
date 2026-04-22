@@ -10,6 +10,8 @@ func RegisterProductRoute() {
 	di.Router.GET("api/product/top-rated", product.GetTopRatedProducts)
 	di.Router.GET("api/product/best-seller", product.GetBestSellerProducts)
 	di.Router.GET("api/product/most-liked", product.GetMostLikedProducts)
+	di.Router.GET("api/product/:id/details", product.GetProductDetail)
 
-	// sale
+	// variants
+
 }
