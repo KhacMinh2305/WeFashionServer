@@ -13,5 +13,5 @@ func RegisterProductRoute() {
 	di.Router.GET("api/product/:id/details", product.GetProductDetail)
 
 	// variants
-
+	di.Router.GET("api/product/shop/:id", product.GetShopProducts)
 }

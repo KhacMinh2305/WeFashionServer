@@ -21,9 +21,9 @@ type ProductBrief struct {
 
 // ProductDetailResponse is the main response for product detail
 type ProductDetailResponse struct {
-	Product ProductDetail `json:"product"`
+	Product ProductDetail          `json:"product"`
 	Sku     []ProductVariantDetail `json:"sku"`
-	Shop    ShopBrief `json:"shop"`
+	Shop    ShopBrief              `json:"shop"`
 }
 
 // ProductDetail omits ShopId
@@ -39,11 +39,11 @@ type ProductDetail struct {
 }
 
 type ProductVariantDetail struct {
-	Sku    int         `json:"sku"`
-	Amount int         `json:"amount"`
-	Price  float32     `json:"price"`
-	Size   SizeBrief   `json:"size"`
-	Color  ColorBrief  `json:"color"`
+	Sku    int        `json:"sku"`
+	Amount int        `json:"amount"`
+	Price  float32    `json:"price"`
+	Size   SizeBrief  `json:"size"`
+	Color  ColorBrief `json:"color"`
 }
 
 type SizeBrief struct {

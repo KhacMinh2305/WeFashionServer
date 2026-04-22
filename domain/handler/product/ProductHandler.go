@@ -316,3 +316,128 @@ func queryColorById(colorId int) (model.Color, error) {
 	err := database.DB.Where("id = ?", colorId).First(&color).Error
 	return color, err
 }
+
+func GetShopProducts(ctx *gin.Context) {
+	if !ValidateTokenOrAbort(ctx) {
+		return
+	}
+
+	shopId, err := parseShopIdForShopProducts(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, entity.ErrorResponse{
+			StatusCode: http.StatusBadRequest,
+			Error:      "Invalid shop id",
+			Detail:     "id must be a positive integer",
+		})
+		return
+	}
+
+	limit, offset, errResp := parseLimitOffset(ctx)
+	if errResp != nil {
+		ctx.JSON(http.StatusBadRequest, errResp)
+		return
+	}
+
+	shop, err := queryShopByIdForShopProducts(shopId)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			ctx.JSON(http.StatusOK, entity.SuccessReponse[any]{
+				StatusCode: http.StatusOK,
+				Time:       time.Now(),
+				Data:       nil,
+			})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, entity.ErrorResponse{
+			StatusCode: http.StatusInternalServerError,
+			Error:      "Database error",
+			Detail:     err.Error(),
+		})
+		return
+	}
+
+	products, err := queryProductsByShopIdForShopProducts(shopId, limit, offset)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, entity.ErrorResponse{
+			StatusCode: http.StatusInternalServerError,
+			Error:      "Database error",
+			Detail:     err.Error(),
+		})
+		return
+	}
+
+	resp := buildShopProductsResponseForShopProducts(shop, products)
+	ctx.JSON(http.StatusOK, entity.SuccessReponse[ShopProductsResponse]{
+		StatusCode: http.StatusOK,
+		Time:       time.Now(),
+		Data:       resp,
+	})
+}
+
+// --- Helpers for GetShopProducts ---
+func parseShopIdForShopProducts(ctx *gin.Context) (int, error) {
+	idStr := ctx.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil || id <= 0 {
+		return 0, err
+	}
+	return id, nil
+}
+
+func queryShopByIdForShopProducts(shopId int) (model.Shop, error) {
+	var shop model.Shop
+	err := database.DB.Where("id = ?", shopId).First(&shop).Error
+	return shop, err
+}
+
+func queryProductsByShopIdForShopProducts(shopId, limit, offset int) ([]model.Product, error) {
+	var products []model.Product
+	err := database.DB.Where("shop_id = ?", shopId).Limit(limit).Offset(offset).Find(&products).Error
+	return products, err
+}
+
+type ShopProductsResponse struct {
+	Shop     ShopBrief         `json:"shop"`
+	Products []ShopProductItem `json:"products"`
+}
+
+type ShopProductItem struct {
+	Id          int     `json:"id"`
+	Name        string  `json:"name"`
+	ImageUrl    string  `json:"image_url"`
+	Description string  `json:"description"`
+	Rating      float32 `json:"rating"`
+	SoldAmount  int     `json:"sold_amount"`
+	LikedAmount int     `json:"liked_amount"`
+	CategoryId  int     `json:"category_id"`
+}
+
+func buildShopProductsResponseForShopProducts(shop model.Shop, products []model.Product) ShopProductsResponse {
+	items := make([]ShopProductItem, len(products))
+	for i, p := range products {
+		items[i] = ShopProductItem{
+			Id:          p.Id,
+			Name:        p.Name,
+			ImageUrl:    p.ImageUrl,
+			Description: p.Description,
+			Rating:      p.Rating,
+			SoldAmount:  p.SoldAmount,
+			LikedAmount: p.LikedAmount,
+			CategoryId:  p.CategoryId,
+		}
+	}
+	return ShopProductsResponse{
+		Shop: ShopBrief{
+			Id:          shop.Id,
+			Name:        shop.Name,
+			AvatarUrl:   shop.AvatarUrl,
+			Email:       shop.Email,
+			PhoneNumber: shop.PhoneNumber,
+			Bio:         shop.Bio,
+			RateAmount:  shop.RateAmount,
+			Rating:      shop.Rating,
+			Followers:   shop.Followers,
+		},
+		Products: items,
+	}
+}
