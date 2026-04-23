@@ -1,7 +1,10 @@
 package search
 
-import "WeFashionServer/di"
+import (
+	"WeFashionServer/di"
+	"WeFashionServer/domain/handler/search"
+)
 
 func RegisterSearchRoute() {
-	di.Router.GET("api/search")
+	di.Router.GET("api/search", search.SearchProductAndShop)
 }

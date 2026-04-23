@@ -7,6 +7,7 @@ import (
 	"WeFashionServer/infrastructure/model"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -26,7 +27,6 @@ func ValidateTokenOrAbort(ctx *gin.Context) bool {
 }
 
 // -------------------------handler funcs-------------------------
-
 func getQueryParams(ctx *gin.Context) (string, int, bool) {
 	limitStr := ctx.DefaultQuery("limit", "10")
 	query := ctx.DefaultQuery("query", "")
@@ -34,11 +34,11 @@ func getQueryParams(ctx *gin.Context) (string, int, bool) {
 	if castErr != nil || limit <= 0 {
 		ctx.JSON(http.StatusBadRequest, entity.ErrorResponse{
 			StatusCode: http.StatusBadRequest,
-			Error: "Invalid param",
-			Detail: "Limit must be integer"
+			Error:      "Invalid param",
+			Detail:     "Limit must be integer",
 		})
 		return "", 0, false
-	} 
+	}
 	return query, limit, true
 }
 
@@ -63,17 +63,17 @@ func productsToResponse(prods *[]model.Product) *[]SearchedProduct {
 
 func shopsToResponse(shops *[]model.Shop) *[]SearchedShop {
 	s := make([]SearchedShop, 0, len(*shops))
-	for _, shop := range *prods {
+	for _, shop := range *shops {
 		temp := SearchedShop{
 			Id:          shop.Id,
 			Name:        shop.Name,
-			ImageUrl:    shop.AvatarUrl,
-			Description: shop.Email,
-			Rating:      shop.PhoneNumber,
-			SoldAmount:  shop.Bio,
-			LikedAmount: shop.RateAmount,
-			CategoryId:  shop.Rating,
-			ShopId:      shop.Followers,
+			AvatarUrl:   shop.AvatarUrl,
+			Email:       shop.Email,
+			PhoneNumber: shop.PhoneNumber,
+			Bio:         shop.Bio,
+			RateAmount:  shop.RateAmount,
+			Rating:      shop.Rating,
+			Followers:   shop.Followers,
 		}
 		s = append(s, temp)
 	}
@@ -108,4 +108,14 @@ func SearchProductAndShop(ctx *gin.Context) {
 	if !success {
 		return
 	}
+	prods := queryProducts(query, limit)
+	shops := queryShops(query, limit)
+	ctx.JSON(http.StatusOK, entity.SuccessReponse[interface{}]{
+		StatusCode: http.StatusOK,
+		Time:       time.Now(),
+		Data: gin.H{
+			"products": prods,
+			"shops":    shops,
+		},
+	})
 }
