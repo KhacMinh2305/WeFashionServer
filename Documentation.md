@@ -662,6 +662,15 @@
   }
 }
 ```
+
+#### 10.5. Lấy danh sách sản phẩm của shop
+- **Endpoint:** `GET api/product/shop/:id`
+- **Header:** `Authorization: Bearer <token>`
+- **Response thành công (tìm thấy):**
+```
+(Bố sung sau)
+```
+
 - **Response thành công (không tìm thấy):**
 ```json
 {
