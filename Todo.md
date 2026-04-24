@@ -1,0 +1,1 @@
+1. Thêm phần category của sản phẩm vào response trả về của phần product
