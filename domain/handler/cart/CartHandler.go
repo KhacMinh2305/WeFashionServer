@@ -14,6 +14,14 @@ import (
 
 // database.DB.Order("liked_amount DESC").Limit(limit).Offset(offset).Find(&products)
 
+func groupSkuByProductId(items *[]CartProductSku) *map[int][]CartProductSku {
+	result := make(map[int][]CartProductSku)
+	for _, item := range *items {
+		result[item.ProductId] = append(result[item.ProductId], item)
+	}
+	return &result
+}
+
 func getUser(ctx *gin.Context, userId int) *CartUser {
 	user := model.User{}
 	if database.DB.Where("user_id = ?", userId).Find(&user).Error != nil {
@@ -62,16 +70,9 @@ func getCartRawItem(id int) *[]CartRawItem {
 }
 
 // Important
-func GetCartProductSkus() *[]CartRawItem {
-	return nil
-}
+func GetCartProductSkus(ids *[]int) *[]CartProductSku {
 
-func groupSkuByProductId(items *[]CartProductSku) *map[int][]CartProductSku {
-	result := make(map[int][]CartProductSku)
-	for _, item := range *items {
-		result[item.ProductId] = append(result[item.ProductId], item)
-	}
-	return &result
+	return nil
 }
 
 func GetUserCart(ctx *gin.Context) {
@@ -89,7 +90,7 @@ func GetUserCart(ctx *gin.Context) {
 		helper.ResponseRequestFieldNotFound(ctx, "Id")
 	}
 
-	// cart items
+	// raw cart items
 	raws := getCartRawItem(*userId)
 	if raws == nil || len((*raws)) <= 0 {
 		ctx.JSON(http.StatusOK, entity.SuccessReponse[*interface{}]{
@@ -100,13 +101,7 @@ func GetUserCart(ctx *gin.Context) {
 		return
 	}
 
-	// product
-
-	// product category
-
-	// product sku
-
-	// size, color
+	// transfer to list raw ids
 
 }
 
