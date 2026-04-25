@@ -21,7 +21,7 @@ func main() {
 
 	registerRoutes()
 
-	di.Router.Run()
+	di.Router.Run(":8080")
 }
 
 func registerRoutes() {
