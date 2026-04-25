@@ -4,109 +4,20 @@ package account
 import (
 	"WeFashionServer/domain/entity"
 	"WeFashionServer/domain/handler/authentication"
+	"WeFashionServer/domain/helper"
 	"WeFashionServer/infrastructure/database"
 	"WeFashionServer/infrastructure/model"
 	"context"
-	"errors"
 	"fmt"
-	"net"
 	"net/http"
-	"net/mail"
 	"net/smtp"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
-	"golang.org/x/net/idna"
 )
-
-// Kiểm tra email hợp lệ
-func ValidateEmail(ctx context.Context, email string, checkMX bool) (bool, error) {
-	email = strings.TrimSpace(email)
-	if email == "" {
-		return false, errors.New("email is empty")
-	}
-	if len(email) > 254 {
-		return false, errors.New("email exceeds maximum length (254)")
-	}
-
-	addr, err := mail.ParseAddress(email)
-	if err != nil {
-		return false, fmt.Errorf("invalid address syntax: %w", err)
-	}
-	// Chỉ chấp nhận plain email, không chấp nhận "Name <email>" format
-	if addr.Address != email {
-		return false, errors.New("input must be a plain email address")
-	}
-
-	parts := strings.SplitN(addr.Address, "@", 2)
-	if len(parts) != 2 {
-		return false, errors.New("missing @ separator")
-	}
-	local, domain := parts[0], parts[1]
-
-	if len(local) == 0 || len(local) > 64 {
-		return false, errors.New("local part length invalid (1-64)")
-	}
-
-	asciiDomain, err := idna.Lookup.ToASCII(domain)
-	if err != nil {
-		return false, fmt.Errorf("invalid domain name: %w", err)
-	}
-	if len(asciiDomain) == 0 || len(asciiDomain) > 255 {
-		return false, errors.New("domain part length invalid")
-	}
-
-	labels := strings.Split(asciiDomain, ".")
-	if len(labels) < 2 {
-		return false, errors.New("domain must contain a TLD")
-	}
-	for _, l := range labels {
-		if l == "" {
-			return false, errors.New("empty domain label")
-		}
-		if len(l) > 63 {
-			return false, errors.New("domain label exceeds 63 characters")
-		}
-	}
-	// TLD không được toàn số
-	tld := labels[len(labels)-1]
-	if _, atoiErr := strconv.Atoi(tld); atoiErr == nil {
-		return false, errors.New("TLD must not be all numeric")
-	}
-
-	if checkMX {
-		resolver := &net.Resolver{}
-		mxRecords, mxErr := resolver.LookupMX(ctx, asciiDomain)
-		if mxErr != nil || len(mxRecords) == 0 {
-			hosts, hostErr := resolver.LookupHost(ctx, asciiDomain)
-			if hostErr != nil || len(hosts) == 0 {
-				var dnsErr *net.DNSError
-				if errors.As(hostErr, &dnsErr) && dnsErr.IsTemporary {
-					return false, fmt.Errorf("DNS lookup temporarily failed: %w", hostErr)
-				}
-				return false, errors.New("no MX or A/AAAA records found for domain")
-			}
-		}
-	}
-	return true, nil
-}
-
-func validateTokenOrAbort(ctx *gin.Context) bool {
-	_, err := authentication.ValidateToken(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, entity.ErrorResponse{
-			StatusCode: http.StatusUnauthorized,
-			Error:      "Unauthorized",
-			Detail:     err.Error(),
-		})
-		return false
-	}
-	return true
-}
 
 func validateRegisterInput(req *struct {
 	Email    string `json:"email"`
@@ -121,7 +32,7 @@ func validateRegisterInput(req *struct {
 		})
 		return false
 	}
-	if ok, err := ValidateEmail(context.Background(), req.Email, false); !ok {
+	if ok, err := helper.ValidateEmail(context.Background(), req.Email, false); !ok {
 		ctx.JSON(http.StatusBadRequest, entity.ErrorResponse{
 			StatusCode: http.StatusBadRequest,
 			Error:      "Invalid email format",
@@ -213,7 +124,7 @@ func sendEmail(to, code string) error {
 
 // POST /api/account/register
 func RegisterAccount(ctx *gin.Context) {
-	if !validateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	var req struct {
@@ -270,7 +181,7 @@ func RegisterAccount(ctx *gin.Context) {
 
 // POST /api/account/login
 func LoginAccount(ctx *gin.Context) {
-	if !validateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	var req struct {
@@ -321,7 +232,7 @@ func LoginAccount(ctx *gin.Context) {
 
 // POST /api/account/forgot-password
 func ForgotPassword(ctx *gin.Context) {
-	if !validateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	var req struct {
@@ -336,7 +247,7 @@ func ForgotPassword(ctx *gin.Context) {
 		})
 		return
 	}
-	if ok, err := ValidateEmail(context.Background(), req.Email, false); !ok {
+	if ok, err := helper.ValidateEmail(context.Background(), req.Email, false); !ok {
 		ctx.JSON(http.StatusBadRequest, entity.ErrorResponse{
 			StatusCode: http.StatusBadRequest,
 			Error:      "Invalid email format",
@@ -383,7 +294,7 @@ func ForgotPassword(ctx *gin.Context) {
 
 // POST /api/account/forgot-password/validate
 func ValidateCode(ctx *gin.Context) {
-	if !validateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	var req struct {
@@ -399,7 +310,7 @@ func ValidateCode(ctx *gin.Context) {
 		})
 		return
 	}
-	if ok, err := ValidateEmail(context.Background(), req.Email, false); !ok {
+	if ok, err := helper.ValidateEmail(context.Background(), req.Email, false); !ok {
 		ctx.JSON(http.StatusBadRequest, entity.ErrorResponse{
 			StatusCode: http.StatusBadRequest,
 			Error:      "Invalid email format",
@@ -455,7 +366,7 @@ func ValidateCode(ctx *gin.Context) {
 
 func ChangePassword(ctx *gin.Context) {
 	// Validate token first
-	if !validateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 

@@ -2,6 +2,7 @@ package coupon
 
 import (
 	"WeFashionServer/domain/entity"
+	"WeFashionServer/domain/handler/authentication"
 	"WeFashionServer/infrastructure/database"
 	"WeFashionServer/infrastructure/model"
 	"net/http"
@@ -12,7 +13,7 @@ import (
 
 // Route: /api/coupons (all coupons)
 func GetCoupons(ctx *gin.Context) {
-	if !validateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	var coupons []model.Coupon
@@ -34,7 +35,7 @@ func GetCoupons(ctx *gin.Context) {
 
 // Route: /api/coupons/:id
 func GetCouponById(ctx *gin.Context) {
-	if !validateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	id, ok := getIntParam(ctx, "id", false)
@@ -60,7 +61,7 @@ func GetCouponById(ctx *gin.Context) {
 
 // Route: /api/coupons/shop?shop_id=123
 func GetCouponsOfShopByShopId(ctx *gin.Context) {
-	if !validateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	shopId, ok := getIntParam(ctx, "shop_id", true)
@@ -89,7 +90,7 @@ func GetCouponsOfShopByShopId(ctx *gin.Context) {
 
 // Route: /api/coupons/user?user_id=456
 func GetAvailableCouponsForUserByUserId(ctx *gin.Context) {
-	if !validateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	userId, ok := getIntParam(ctx, "user_id", true)
@@ -118,7 +119,7 @@ func GetAvailableCouponsForUserByUserId(ctx *gin.Context) {
 
 // Route: /api/coupons/order?shop_id=123
 func GetCouponsForOrderOfShopByShopId(ctx *gin.Context) {
-	if !validateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	shopId, ok := getIntParam(ctx, "shop_id", true)

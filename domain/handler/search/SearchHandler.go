@@ -12,20 +12,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// -------------------------helpers-------------------------
-func ValidateTokenOrAbort(ctx *gin.Context) bool {
-	_, err := authentication.ValidateToken(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, entity.ErrorResponse{
-			StatusCode: http.StatusUnauthorized,
-			Error:      "Unauthorized",
-			Detail:     err.Error(),
-		})
-		return false
-	}
-	return true
-}
-
 // -------------------------handler funcs-------------------------
 func getQueryParams(ctx *gin.Context) (string, int, bool) {
 	limitStr := ctx.DefaultQuery("limit", "10")
@@ -101,7 +87,7 @@ func queryShops(query string, limit int) *[]SearchedShop {
 }
 
 func SearchProductAndShop(ctx *gin.Context) {
-	if !ValidateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	query, limit, success := getQueryParams(ctx)

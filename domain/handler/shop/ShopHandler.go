@@ -14,7 +14,7 @@ import (
 
 // GET /api/shop : get all shops
 func GetShops(ctx *gin.Context) {
-	if !validateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	var shops []model.Shop
@@ -49,7 +49,7 @@ func GetShops(ctx *gin.Context) {
 
 // PUT /api/shop/follow?shop_id=...&follow=...
 func UpdateShopFollow(ctx *gin.Context) {
-	if !validateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	shopIdStr := ctx.Query("shop_id")
@@ -126,18 +126,4 @@ func UpdateShopFollow(ctx *gin.Context) {
 		Time:       time.Now(),
 		Data:       resp,
 	})
-}
-
-// --- helpers ---
-func validateTokenOrAbort(ctx *gin.Context) bool {
-	_, err := authentication.ValidateToken(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, entity.ErrorResponse{
-			StatusCode: http.StatusUnauthorized,
-			Error:      "Unauthorized",
-			Detail:     err.Error(),
-		})
-		return false
-	}
-	return true
 }

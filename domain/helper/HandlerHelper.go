@@ -1,27 +1,12 @@
 package helper
 
 import (
-	"WeFashionServer/domain/entity"
-	"WeFashionServer/domain/handler/authentication"
-	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
-func ValidateTokenOrAbort(ctx *gin.Context) bool {
-	_, err := authentication.ValidateToken(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, entity.ErrorResponse{
-			StatusCode: http.StatusUnauthorized,
-			Error:      "Unauthorized",
-			Detail:     err.Error(),
-		})
-		return false
-	}
-	return true
-}
-
-func ParseRequestExtraInfo[T any](key string, ctx *gin.Context, keyProvider func() (string, bool)) (*T, bool) {
+func parseRequestExtraInfo[T any](key string, ctx *gin.Context, keyProvider func() (string, bool)) (*T, bool) {
 	valueStr, exist := keyProvider()
 	if !exist {
 		ResponseRequestFieldNotFound(ctx, key)
@@ -36,16 +21,17 @@ func ParseRequestExtraInfo[T any](key string, ctx *gin.Context, keyProvider func
 }
 
 func GetParam[T any](ctx *gin.Context, key string) (*T, bool) {
-	return ParseRequestExtraInfo[T](
+	return parseRequestExtraInfo[T](
 		key, ctx,
 		func() (string, bool) {
-			return ctx.GetParam(key)
+			keyStr := strings.Trim(ctx.Param(key), "/")
+			return keyStr, keyStr != ""
 		},
 	)
 }
 
 func GetQuery[T any](ctx *gin.Context, key string) (*T, bool) {
-	return ParseRequestExtraInfo[T](
+	return parseRequestExtraInfo[T](
 		key, ctx,
 		func() (string, bool) {
 			return ctx.GetQuery(key)

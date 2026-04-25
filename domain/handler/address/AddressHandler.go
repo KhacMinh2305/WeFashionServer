@@ -13,22 +13,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func validateTokenOrAbort(ctx *gin.Context) bool {
-	_, err := authentication.ValidateToken(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, entity.ErrorResponse{
-			StatusCode: http.StatusUnauthorized,
-			Error:      "Unauthorized",
-			Detail:     err.Error(),
-		})
-		return false
-	}
-	return true
-}
-
 // GET /api/address/user/:id
 func GetAddressesByUserId(ctx *gin.Context) {
-	if !validateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	idStr := ctx.Param("id")
@@ -73,7 +60,7 @@ func GetAddressesByUserId(ctx *gin.Context) {
 
 // GET /api/address/:id
 func GetAddressById(ctx *gin.Context) {
-	if !validateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	idStr := ctx.Param("id")
@@ -139,7 +126,7 @@ func userExists(userId int) bool {
 
 // POST /api/address/create
 func CreateAddress(ctx *gin.Context) {
-	if !validateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	var req struct {
@@ -212,7 +199,7 @@ func CreateAddress(ctx *gin.Context) {
 
 // PUT /api/address/update
 func UpdateAddress(ctx *gin.Context) {
-	if !validateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	addressIdStr := ctx.Query("address_id")
@@ -312,7 +299,7 @@ func UpdateAddress(ctx *gin.Context) {
 
 // DELETE /api/address/:id/delete
 func DeleteAddress(ctx *gin.Context) {
-	if !validateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	idStr := ctx.Param("id")

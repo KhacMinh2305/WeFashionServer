@@ -14,7 +14,7 @@ import (
 
 // GET /api/color : get all colors or by id if color_id param exists
 func GetColors(ctx *gin.Context) {
-	if !validateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	idStr := ctx.Query("color_id")
@@ -71,18 +71,4 @@ func GetColors(ctx *gin.Context) {
 		Time:       time.Now(),
 		Data:       ColorListResponse{Colors: resp},
 	})
-}
-
-// --- helpers ---
-func validateTokenOrAbort(ctx *gin.Context) bool {
-	_, err := authentication.ValidateToken(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, entity.ErrorResponse{
-			StatusCode: http.StatusUnauthorized,
-			Error:      "Unauthorized",
-			Detail:     err.Error(),
-		})
-		return false
-	}
-	return true
 }

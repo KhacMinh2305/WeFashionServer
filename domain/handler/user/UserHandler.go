@@ -12,22 +12,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func validateTokenOrAbort(ctx *gin.Context) bool {
-	_, err := authentication.ValidateToken(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, entity.ErrorResponse{
-			StatusCode: http.StatusUnauthorized,
-			Error:      "Unauthorized",
-			Detail:     err.Error(),
-		})
-		return false
-	}
-	return true
-}
-
 // GET /api/user?user_id=123
 func GetUser(ctx *gin.Context) {
-	if !validateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	userIdStr := ctx.Query("user_id")
@@ -58,7 +45,7 @@ func GetUser(ctx *gin.Context) {
 
 // POST /api/user/:id/update
 func UpdateUser(ctx *gin.Context) {
-	if !validateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	idStr := ctx.Param("id")

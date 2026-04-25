@@ -2,7 +2,6 @@ package coupon
 
 import (
 	"WeFashionServer/domain/entity"
-	"WeFashionServer/domain/handler/authentication"
 	"WeFashionServer/infrastructure/database"
 	"WeFashionServer/infrastructure/model"
 	"net/http"
@@ -31,20 +30,6 @@ func buildCouponResponseList(coupons []model.Coupon) []CouponResponse {
 		})
 	}
 	return resp
-}
-
-// Helper: validate token, return true if valid, otherwise write error response and return false
-func validateTokenOrAbort(ctx *gin.Context) bool {
-	_, err := authentication.ValidateToken(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, entity.ErrorResponse{
-			StatusCode: http.StatusUnauthorized,
-			Error:      "Unauthorized",
-			Detail:     err.Error(),
-		})
-		return false
-	}
-	return true
 }
 
 // Helper: get int param from query or path, write error if invalid

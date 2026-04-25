@@ -4,19 +4,23 @@ import (
 	"WeFashionServer/domain/entity"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 // ---------------------------code---------------------------
+const UNAUTHORIZED_CODE = http.StatusUnauthorized
 const NOT_FOUND_CODE = http.StatusNotFound
 const PARSE_CODE = http.StatusConflict
 
 // ---------------------------Error---------------------------
+const UNAUTHORIZED_ERROR = "Invalid token"
 const NOT_FOUND_ERROR = "Not found"
 const PARSE_ERROR = "Invalid type"
 
 // ---------------------------Detail---------------------------
+const UNAUTHORIZED_DETAIL = "Token may be experied or invalid"
 const NOT_FOUND_DETAIL_REQUEST = "%s not found"
 const NOT_FOUND_DETAIL_DATA = "%s not found with the %s %s"
 const PARSE_DETAIL = "%s must be %s"
@@ -33,6 +37,27 @@ func ReponseErrorResponse(ctx *gin.Context, code int, err, detail string) {
 	ctx.JSON(
 		code,
 		buildErrorResponse(code, err, detail),
+	)
+}
+
+func ResponseSuccessResponse[T *any](ctx *gin.Context, data T) {
+	ctx.JSON(http.StatusOK, entity.SuccessReponse[T]{
+		StatusCode: http.StatusOK,
+		Time:       time.Now(),
+		Data:       data,
+	})
+}
+
+func ResponseUnauthorized(ctx *gin.Context, detail *string) {
+	errDetail := UNAUTHORIZED_DETAIL
+	if detail != nil {
+		errDetail = *detail
+	}
+	ReponseErrorResponse(
+		ctx,
+		UNAUTHORIZED_CODE,
+		UNAUTHORIZED_ERROR,
+		errDetail,
 	)
 }
 

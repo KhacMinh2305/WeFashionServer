@@ -2,6 +2,7 @@ package cart
 
 import (
 	"WeFashionServer/domain/entity"
+	"WeFashionServer/domain/handler/authentication"
 	"WeFashionServer/domain/helper"
 	"WeFashionServer/infrastructure/database"
 	"WeFashionServer/infrastructure/model"
@@ -76,7 +77,7 @@ func GetCartProductSkus(ids *[]int) *[]CartProductSku {
 }
 
 func GetUserCart(ctx *gin.Context) {
-	if !helper.ValidateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	userId, exist := helper.GetParam[int](ctx, "id")

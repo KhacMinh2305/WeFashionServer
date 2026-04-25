@@ -14,7 +14,7 @@ import (
 
 // GET /api/category : get all categories or by id if category_id param exists
 func GetCategories(ctx *gin.Context) {
-	if !validateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	idStr := ctx.Query("category_id")
@@ -71,18 +71,4 @@ func GetCategories(ctx *gin.Context) {
 		Time:       time.Now(),
 		Data:       CategoryListResponse{Categories: resp},
 	})
-}
-
-// --- helpers ---
-func validateTokenOrAbort(ctx *gin.Context) bool {
-	_, err := authentication.ValidateToken(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, entity.ErrorResponse{
-			StatusCode: http.StatusUnauthorized,
-			Error:      "Unauthorized",
-			Detail:     err.Error(),
-		})
-		return false
-	}
-	return true
 }

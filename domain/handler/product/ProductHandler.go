@@ -13,19 +13,6 @@ import (
 	"gorm.io/gorm"
 )
 
-func ValidateTokenOrAbort(ctx *gin.Context) bool {
-	_, err := authentication.ValidateToken(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, entity.ErrorResponse{
-			StatusCode: http.StatusUnauthorized,
-			Error:      "Unauthorized",
-			Detail:     err.Error(),
-		})
-		return false
-	}
-	return true
-}
-
 func parseLimitOffset(ctx *gin.Context) (int, int, *entity.ErrorResponse) {
 	limitStr := ctx.DefaultQuery("limit", "10")
 	offsetStr := ctx.DefaultQuery("offset", "0")
@@ -73,7 +60,7 @@ func sendProductList(ctx *gin.Context, title string, products []model.Product, l
 }
 
 func GetProducts(ctx *gin.Context) {
-	if !ValidateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	limit, offset, errResp := parseLimitOffset(ctx)
@@ -94,7 +81,7 @@ func GetProducts(ctx *gin.Context) {
 }
 
 func GetTopRatedProducts(ctx *gin.Context) {
-	if !ValidateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	limit, offset, errResp := parseLimitOffset(ctx)
@@ -115,7 +102,7 @@ func GetTopRatedProducts(ctx *gin.Context) {
 }
 
 func GetBestSellerProducts(ctx *gin.Context) {
-	if !ValidateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	limit, offset, errResp := parseLimitOffset(ctx)
@@ -136,7 +123,7 @@ func GetBestSellerProducts(ctx *gin.Context) {
 }
 
 func GetMostLikedProducts(ctx *gin.Context) {
-	if !ValidateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 	limit, offset, errResp := parseLimitOffset(ctx)
@@ -157,7 +144,7 @@ func GetMostLikedProducts(ctx *gin.Context) {
 }
 
 func GetProductDetail(ctx *gin.Context) {
-	if !ValidateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 
@@ -318,7 +305,7 @@ func queryColorById(colorId int) (model.Color, error) {
 }
 
 func GetShopProducts(ctx *gin.Context) {
-	if !ValidateTokenOrAbort(ctx) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
 		return
 	}
 

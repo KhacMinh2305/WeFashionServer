@@ -15,7 +15,6 @@ func (repo *AuthRepositoryImpl) GenerateToken( /*targetId string*/ ) (*entity.En
 	expiredAt := time.Now().Add(time.Hour * 1)
 	createdAt := time.Now()
 	claims := jwt.MapClaims{
-		// "user_id": targetId,
 		"exp": expiredAt.Unix(),
 		"iat": createdAt.Unix(),
 	}
