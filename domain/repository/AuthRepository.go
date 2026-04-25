@@ -7,6 +7,7 @@ import (
 )
 
 type AuthRepository interface {
-	GenerateToken(targetId string) (*entity.EntityToken, error)
+	// GenerateToken(targetId string) (*entity.EntityToken, error)
+	GenerateToken() (*entity.EntityToken, error)
 	ParseToken(token string) (*jwt.Token, error)
 }
