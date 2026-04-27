@@ -681,13 +681,104 @@
 ```
 
 
----
-- Response lỗi dạng:
+## 11. Cart APIs
+
+### 11.1. Lấy giỏ hàng của user
+- **Endpoint:** `GET /api/cart/:id`
+- **Header:** `Authorization: Bearer <token>`
+- **Response thành công (có item):**
 ```json
 {
-  "status_code": <mã lỗi>,
-  "error": "...",
-  "detail": "..."
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "user": {
+      "id": 1,
+      "name": "username",
+      "avatar_url": "...",
+      "email": "user@example.com",
+      "phone_number": "",
+      "bio": ""
+    },
+    "products": [
+      {
+        "id": 1,
+        "name": "...",
+        "image_url": "...",
+        "description": "...",
+        "rating": 4.5,
+        "sold_amount": 100,
+        "liked_amount": 50,
+        "category": {
+          "id": 1,
+          "name": "..."
+        },
+        "skus": [
+          {
+            "sku": 101,
+            "amount": 2,
+            "price": 199000,
+            "product_id": 1,
+            "size": {
+              "id": 1,
+              "name": "M"
+            },
+            "color": {
+              "id": 2,
+              "rgb": "255,255,255"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+- **Response thành công (cart rỗng):**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": null
+}
+```
+
+### 11.2. Cập nhật số lượng SKU trong giỏ hàng
+- **Endpoint:** `POST /api/cart/:id/sku/update`
+- **Header:** `Authorization: Bearer <token>`
+- **Body:**
+```json
+{
+  "sku": 101,
+  "change": "plus",
+  "amount": 3
+}
+```
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "applied": 3,
+    "expected": 3
+  }
+}
+```
+
+### 11.3. Xóa SKU khỏi giỏ hàng
+- **Endpoint:** `DELETE /api/cart/:id/delete`
+- **Header:** `Authorization: Bearer <token>`
+- **Query:** `sku=<sku_id>`
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "success": true,
+    "message": "Item removed from cart successfully"
+  }
 }
 ```
 
