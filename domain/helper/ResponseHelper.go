@@ -40,11 +40,11 @@ func ReponseErrorResponse(ctx *gin.Context, code int, err, detail string) {
 	)
 }
 
-func ResponseSuccessResponse[T *any](ctx *gin.Context, data T) {
+func ResponseSuccessResponse[T any](ctx *gin.Context, data *T) {
 	ctx.JSON(http.StatusOK, entity.SuccessReponse[T]{
 		StatusCode: http.StatusOK,
 		Time:       time.Now(),
-		Data:       data,
+		Data:       *data,
 	})
 }
 

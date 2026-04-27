@@ -7,11 +7,16 @@ import (
 	"net"
 	"net/mail"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 
 	"golang.org/x/net/idna"
 )
+
+type PrimitveType interface {
+	~int | ~int64 | ~float64 | ~string
+}
 
 func ParsePrimitive[T any](s string) (T, error) {
 	var zero T
@@ -136,4 +141,39 @@ func ValidateEmail(ctx context.Context, email string, checkMX bool) (bool, error
 		}
 	}
 	return true, nil
+}
+
+func Map[T, R any](s []T, transformation func(*T) R) []R {
+	newS := []R{}
+	for key := range s {
+		newS = append(newS, transformation(&s[key]))
+	}
+	return newS
+}
+
+func SliceToMap[K comparable, V any](s []V, keyProvider func(*V) K) map[K]*V {
+	var result = make(map[K]*V)
+	for idx := range s {
+		result[keyProvider(&s[idx])] = &s[idx]
+	}
+	return result
+}
+
+func SliceToMapDuplicated[K comparable, V any](s []V, keyProvider func(*V) K) map[K][]V {
+	result := make(map[K][]V, len(s))
+	for i := range s {
+		v := &s[i]
+		key := keyProvider(v)
+		result[key] = append(result[key], *v)
+	}
+	return result
+}
+func SortBy[T any, F PrimitveType](s []T, asc bool, value func(*T) F) {
+	sort.Slice(s, func(i, j int) bool {
+		if asc {
+			return value(&s[i]) < value(&s[j])
+		} else {
+			return value(&s[i]) > value(&s[j])
+		}
+	})
 }

@@ -6,6 +6,7 @@ import (
 	"WeFashionServer/presentation/route/account"
 	"WeFashionServer/presentation/route/address"
 	"WeFashionServer/presentation/route/authentication"
+	"WeFashionServer/presentation/route/cart"
 	"WeFashionServer/presentation/route/category"
 	"WeFashionServer/presentation/route/color"
 	"WeFashionServer/presentation/route/coupon"
@@ -38,4 +39,5 @@ func registerRoutes() {
 
 	product.RegisterProductRoute()
 	search.RegisterSearchRoute()
+	cart.RegisterCartRoute()
 }
