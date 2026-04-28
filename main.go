@@ -3,7 +3,6 @@ package main
 import (
 	"WeFashionServer/di"
 	"WeFashionServer/infrastructure/database"
-	"WeFashionServer/infrastructure/repositoryimpl"
 	"WeFashionServer/presentation/route/account"
 	"WeFashionServer/presentation/route/address"
 	"WeFashionServer/presentation/route/authentication"
@@ -24,7 +23,7 @@ func main() {
 
 	registerRoutes()
 
-	repositoryimpl.Initialize()
+	// di.PaymentRepo.Initialize()
 
 	di.Router.Run(":8080")
 }

@@ -13,15 +13,17 @@ import (
 	"github.com/payOSHQ/payos-lib-golang/v2"
 )
 
+type PaymentRepositoryImpl struct{}
+
+type confirmWebhookRequest struct {
+	WebhookUrl string `json:"webhookUrl"`
+}
+
 var PayOsClient *payos.PayOS
 
 var initialized = false
 
 var isReady = false
-
-type confirmWebhookRequest struct {
-	WebhookUrl string `json:"webhookUrl"`
-}
 
 func getApiKey() string {
 	return os.Getenv("PAYOS_API_KEY")
@@ -39,7 +41,7 @@ func getWebhook() string {
 	return os.Getenv("PAYOS_WEBHOOK")
 }
 
-func Initialize() {
+func (p *PaymentRepositoryImpl) Initialize() {
 	client, err := payos.NewPayOS(&payos.PayOSOptions{
 		ClientId:    getClientId(),
 		ApiKey:      getApiKey(),
@@ -50,11 +52,11 @@ func Initialize() {
 	} else {
 		PayOsClient = client
 		initialized = true
-		registerOrConfirmWebhook(context.Background())
+		p.registerOrConfirmWebhook(context.Background())
 	}
 }
 
-func registerOrConfirmWebhook(ctx context.Context) {
+func (p *PaymentRepositoryImpl) registerOrConfirmWebhook(ctx context.Context) {
 	go func() {
 		reqCtx, cancel := context.WithTimeout(ctx, 60*time.Second)
 		defer cancel()
@@ -98,14 +100,14 @@ func registerOrConfirmWebhook(ctx context.Context) {
 	}()
 }
 
-func CreatePaymentLink() (*payos.CreatePaymentLinkResponse, error) {
+func (p *PaymentRepositoryImpl) CreatePaymentRequest() (*payos.CreatePaymentLinkResponse, error) {
 	if PayOsClient == nil || !initialized || !isReady {
 		return nil, errors.New("Client is not ready now")
 	}
 	paymentLink, err := PayOsClient.PaymentRequests.Create(context.Background(), payos.CreatePaymentLinkRequest{
 		OrderCode:   123,
 		Amount:      2000,
-		Description: "payment",
+		Description: "Payment ",
 		ReturnUrl:   "https://go.dev/",
 		CancelUrl:   "https://www.google.com/?hl=vi",
 	})

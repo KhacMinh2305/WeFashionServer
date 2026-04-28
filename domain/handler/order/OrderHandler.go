@@ -7,7 +7,9 @@ import (
 	"WeFashionServer/infrastructure/model"
 	"errors"
 	"fmt"
+	"math/rand"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -265,5 +267,195 @@ func GetOrderDetails(ctx *gin.Context) {
 }
 
 func HandlePaymentWebhook(ctx *gin.Context) {
-	fmt.Println("----------------------Receiver webhook----------------------")
+	fmt.Println("----------------------------------------------------Receiver webhook----------------------------------------------------")
+}
+
+func validateOrderItem(item *OrderItem) (bool, string) {
+	if item.Sku <= 0 {
+		return false, "sku must be a positive integer"
+	}
+	if item.Amount <= 0 {
+		return false, "amount must be a positive integer"
+	}
+	if item.Price <= 0 {
+		return false, "price must be a positive number"
+	}
+	if item.ProductId <= 0 {
+		return false, "product_id must be a positive integer"
+	}
+	if item.SizeId <= 0 {
+		return false, "size_id must be a positive integer"
+	}
+	if item.ColorId <= 0 {
+		return false, "color_id must be a positive integer"
+	}
+	return true, ""
+}
+
+func validateOrderRequestBody(req *OrderRequestBody) (bool, string) {
+	if req.Discount <= 0 {
+		return false, "discount must be a positive number"
+	}
+	if req.ShippingFee <= 0 {
+		return false, "shipping_fee must be a positive number"
+	}
+	if req.TotalPrice <= 0 {
+		return false, "total_price must be a positive number"
+	}
+	if req.UserId <= 0 {
+		return false, "user_id must be a positive integer"
+	}
+	if req.AddressId <= 0 {
+		return false, "address_id must be a positive integer"
+	}
+	if len(req.Items) == 0 {
+		return false, "items must not be empty"
+	}
+	for idx := range req.Items {
+		if ok, msg := validateOrderItem(&req.Items[idx]); !ok {
+			return false, fmt.Sprintf("items[%d]: %s", idx, msg)
+		}
+	}
+	return true, ""
+}
+
+func getAddressByIdForUser(ctx *gin.Context, addressId, userId int) *model.Address {
+	address := getAddressById(ctx, addressId)
+	if address == nil {
+		return nil
+	}
+	if address.UserId != userId {
+		helper.ReponseErrorResponse(ctx, 400, "Invalid address", "address does not belong to user")
+		return nil
+	}
+	return address
+}
+
+func validateSkusExist(items []OrderItem) (bool, error) {
+	skuSet := make(map[int]struct{})
+	for _, item := range items {
+		skuSet[item.Sku] = struct{}{}
+	}
+	if len(skuSet) == 0 {
+		return false, nil
+	}
+	skuList := make([]int, 0, len(skuSet))
+	for sku := range skuSet {
+		skuList = append(skuList, sku)
+	}
+	variants := []model.ProductVariant{}
+	if err := database.DB.Select("sku").Where("sku IN ?", skuList).Find(&variants).Error; err != nil {
+		return false, err
+	}
+	if len(variants) != len(skuList) {
+		return false, nil
+	}
+	return true, nil
+}
+
+func getRandomShipper(ctx *gin.Context) *model.Shipper {
+	shippers := []model.Shipper{}
+	if err := database.DB.Find(&shippers).Error; err != nil {
+		helper.ReponseErrorResponse(ctx, 500, "Database error", err.Error())
+		return nil
+	}
+	if len(shippers) == 0 {
+		helper.ReponseErrorResponse(ctx, 404, "Shipper not found", "no shipper available")
+		return nil
+	}
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return &shippers[rng.Intn(len(shippers))]
+}
+
+func CreateOrder(ctx *gin.Context) {
+	if !authentication.ValidateTokenOrAbort(ctx) {
+		return
+	}
+
+	userId, exist := helper.GetParam[int](ctx, "id")
+	if !exist {
+		return
+	}
+	if *userId <= 0 {
+		helper.ReponseErrorResponse(ctx, 400, "Invalid param", "id must be a positive integer")
+		return
+	}
+
+	if getUserById(ctx, *userId) == nil {
+		return
+	}
+
+	req := OrderRequestBody{}
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		helper.ReponseErrorResponse(ctx, 400, "Invalid body", err.Error())
+		return
+	}
+	if ok, msg := validateOrderRequestBody(&req); !ok {
+		helper.ReponseErrorResponse(ctx, 400, "Invalid body", msg)
+		return
+	}
+
+	if req.UserId != *userId {
+		helper.ReponseErrorResponse(ctx, 400, "Invalid body", "user_id must match id in param")
+		return
+	}
+
+	address := getAddressByIdForUser(ctx, req.AddressId, req.UserId)
+	if address == nil {
+		return
+	}
+
+	if ok, err := validateSkusExist(req.Items); err != nil {
+		helper.ReponseErrorResponse(ctx, 500, "Database error", err.Error())
+		return
+	} else if !ok {
+		helper.ReponseErrorResponse(ctx, 404, "Sku not found", "one or more sku not found")
+		return
+	}
+
+	shipper := getRandomShipper(ctx)
+	if shipper == nil {
+		return
+	}
+
+	order := model.Order{
+		Discount:      req.Discount,
+		ShippingFee:   req.ShippingFee,
+		TotalPrice:    req.TotalPrice,
+		OrderState:    0,
+		ShippingState: -1,
+		CreatedAt:     time.Now(),
+		UserId:        req.UserId,
+		AddressId:     address.Id,
+		PaymentId:     -1,
+		ShipperId:     shipper.Id,
+	}
+
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&order).Error; err != nil {
+			return err
+		}
+		items := make([]model.OrderProductVariant, 0, len(req.Items))
+		for _, item := range req.Items {
+			items = append(items, model.OrderProductVariant{
+				OrderId: order.Id,
+				Sku:     item.Sku,
+				Amount:  item.Amount,
+				Price:   item.Price,
+			})
+		}
+		if len(items) > 0 {
+			if err := tx.Create(&items).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		helper.ReponseErrorResponse(ctx, 500, "Create order failed", err.Error())
+		return
+	}
+
+	message := "Order successfully"
+	helper.ResponseSuccessResponse(ctx, &message)
 }

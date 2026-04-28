@@ -12,3 +12,5 @@ var Router = gin.Default()
 
 // repository
 var AuthRepo repository.AuthRepository = &repositoryimpl.AuthRepositoryImpl{}
+
+var PaymentRepo repository.PaymentRepository = &repositoryimpl.PaymentRepositoryImpl{}
