@@ -3,6 +3,7 @@ package main
 import (
 	"WeFashionServer/di"
 	"WeFashionServer/infrastructure/database"
+	"WeFashionServer/infrastructure/repositoryimpl"
 	"WeFashionServer/presentation/route/account"
 	"WeFashionServer/presentation/route/address"
 	"WeFashionServer/presentation/route/authentication"
@@ -10,6 +11,7 @@ import (
 	"WeFashionServer/presentation/route/category"
 	"WeFashionServer/presentation/route/color"
 	"WeFashionServer/presentation/route/coupon"
+	"WeFashionServer/presentation/route/order"
 	"WeFashionServer/presentation/route/product"
 	"WeFashionServer/presentation/route/search"
 	"WeFashionServer/presentation/route/shop"
@@ -21,6 +23,8 @@ func main() {
 	database.Connect()
 
 	registerRoutes()
+
+	repositoryimpl.Initialize()
 
 	di.Router.Run(":8080")
 }
@@ -40,4 +44,5 @@ func registerRoutes() {
 	product.RegisterProductRoute()
 	search.RegisterSearchRoute()
 	cart.RegisterCartRoute()
+	order.RegisterOrderRoutes()
 }
