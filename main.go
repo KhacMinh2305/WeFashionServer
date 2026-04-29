@@ -17,9 +17,13 @@ import (
 	"WeFashionServer/presentation/route/user"
 	"log"
 	"os"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
+
+	gin.SetMode(gin.ReleaseMode)
 
 	port := os.Getenv("PORT")
 	if port == "" {
