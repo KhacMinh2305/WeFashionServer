@@ -24,7 +24,7 @@ import (
 func getUserById(ctx *gin.Context, userId int) *model.User {
 	user := model.User{}
 	if err := database.DB.Where("id = ?", userId).First(&user).Error; err != nil {
-		fmt.Println("Get user %d failed !", userId)
+		helper.ResponseDataNotFound(ctx, "User", "id", strconv.Itoa(userId))
 		return nil
 	}
 	return &user
@@ -497,7 +497,7 @@ func HandlePaymentWebhook(ctx *gin.Context) {
 	}
 
 	if err := utils.SendOrderPaidEmail(user.Email, orderCode, payment.CreatedAt); err != nil {
-		fmt.Println("Send email to %s failed !", user.Email)
+		fmt.Printf("Send email to %s failed!\n", user.Email)
 		fmt.Println(err.Error())
 	}
 
@@ -575,14 +575,14 @@ func getOrderForPaymentWebhook(orderCode int64) (*model.Order, bool) {
 	order := model.Order{}
 	if err := database.DB.Where("id = ?", orderId).First(&order).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			fmt.Println("Order id is: %d not found", orderId)
+			fmt.Printf("Order id is: %d not found\n", orderId)
 			return nil, false
 		}
-		fmt.Println("Failed to find order with id: %d not found", orderId)
+		fmt.Printf("Failed to find order with id: %d not found\n", orderId)
 		return nil, false
 	}
 	if order.OrderState == 1 {
-		fmt.Println("Order %d were updated!", orderId)
+		fmt.Printf("Order %d were updated!\n", orderId)
 		return nil, false
 	}
 	return &order, true
@@ -615,7 +615,7 @@ func createPaymentAndUpdateOrder(order *model.Order, description string) (*model
 		fmt.Println("Transaction is broken when trying to change order state !")
 		return nil, err
 	}
-	fmt.Println("All Update for order %d successfully !", order.Id)
+	fmt.Printf("All Update for order %d successfully!\n", order.Id)
 	return &payment, nil
 }
 
