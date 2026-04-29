@@ -56,6 +56,47 @@ type OrderDetailPaymentResponse struct {
 	OrderId     int       `json:"order_id"`
 }
 
+type OrderDetailCategoryResponse struct {
+	Id   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+type OrderDetailShopResponse struct {
+	Id   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+type OrderDetailSizeResponse struct {
+	Id   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+type OrderDetailColorResponse struct {
+	Id  int    `json:"id"`
+	Rgb string `json:"rgb"`
+}
+
+type OrderDetailProductSkuResponse struct {
+	Sku    int                      `json:"sku"`
+	Amount int                      `json:"amount"`
+	Price  float32                  `json:"price"`
+	Size   OrderDetailSizeResponse  `json:"size"`
+	Color  OrderDetailColorResponse `json:"color"`
+}
+
+type OrderDetailProductResponse struct {
+	Id          int                             `json:"id"`
+	Name        string                          `json:"name"`
+	ImageUrl    string                          `json:"image_url"`
+	Description string                          `json:"description"`
+	Rating      float32                         `json:"rating"`
+	SoldAmount  int                             `json:"sold_amount"`
+	LikedAmount int                             `json:"liked_amount"`
+	Category    OrderDetailCategoryResponse     `json:"category"`
+	Shop        OrderDetailShopResponse         `json:"shop"`
+	Skus        []OrderDetailProductSkuResponse `json:"skus"`
+}
+
 type OrderDetailResponse struct {
 	Order          OrderDetailOrderResponse     `json:"order"`
 	User           OrderUserResponse            `json:"user"`
@@ -63,6 +104,7 @@ type OrderDetailResponse struct {
 	Address        OrderDetailAddressResponse   `json:"address"`
 	Payment        OrderDetailPaymentResponse   `json:"payment"`
 	Shipper        OrderShipperResponse         `json:"shipper"`
+	Products       []OrderDetailProductResponse `json:"products"`
 }
 
 type OrderUserResponse struct {

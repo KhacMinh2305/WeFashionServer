@@ -23,7 +23,7 @@ func main() {
 
 	registerRoutes()
 
-	di.PaymentRepo.Initialize()
+	// di.PaymentRepo.Initialize()
 
 	di.Router.Run(":8080")
 }

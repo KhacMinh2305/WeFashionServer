@@ -157,6 +157,172 @@ func getShippingStatesByOrderId(orderId int) ([]model.ShippingState, error) {
 	return shippingStates, err
 }
 
+func getOrderProductsByOrderId(ctx *gin.Context, orderId int) ([]OrderDetailProductResponse, bool) {
+	orderItems := []model.OrderProductVariant{}
+	if err := database.DB.Where("order_id = ?", orderId).Find(&orderItems).Error; err != nil {
+		helper.ReponseErrorResponse(ctx, 500, "Database error", err.Error())
+		return nil, false
+	}
+	if len(orderItems) == 0 {
+		return []OrderDetailProductResponse{}, true
+	}
+
+	skuSet := make(map[int]struct{})
+	for _, item := range orderItems {
+		skuSet[item.Sku] = struct{}{}
+	}
+	skuList := make([]int, 0, len(skuSet))
+	for sku := range skuSet {
+		skuList = append(skuList, sku)
+	}
+
+	variants := []model.ProductVariant{}
+	if err := database.DB.Select("sku", "product_id", "size_id", "color_id").Where("sku IN ?", skuList).Find(&variants).Error; err != nil {
+		helper.ReponseErrorResponse(ctx, 500, "Database error", err.Error())
+		return nil, false
+	}
+	skuToProduct := make(map[int]int, len(variants))
+	skuToSize := make(map[int]int, len(variants))
+	skuToColor := make(map[int]int, len(variants))
+	sizeSet := make(map[int]struct{})
+	colorSet := make(map[int]struct{})
+	for _, variant := range variants {
+		skuToProduct[variant.Sku] = variant.ProductId
+		skuToSize[variant.Sku] = variant.SizeId
+		skuToColor[variant.Sku] = variant.ColorId
+		sizeSet[variant.SizeId] = struct{}{}
+		colorSet[variant.ColorId] = struct{}{}
+	}
+	sizeIds := make([]int, 0, len(sizeSet))
+	for id := range sizeSet {
+		sizeIds = append(sizeIds, id)
+	}
+	colorIds := make([]int, 0, len(colorSet))
+	for id := range colorSet {
+		colorIds = append(colorIds, id)
+	}
+
+	sizes := []model.Size{}
+	if len(sizeIds) > 0 {
+		if err := database.DB.Select("id", "name").Where("id IN ?", sizeIds).Find(&sizes).Error; err != nil {
+			helper.ReponseErrorResponse(ctx, 500, "Database error", err.Error())
+			return nil, false
+		}
+	}
+	sizeNames := make(map[int]string, len(sizes))
+	for _, size := range sizes {
+		sizeNames[size.Id] = size.Name
+	}
+
+	colors := []model.Color{}
+	if len(colorIds) > 0 {
+		if err := database.DB.Select("id", "rgb").Where("id IN ?", colorIds).Find(&colors).Error; err != nil {
+			helper.ReponseErrorResponse(ctx, 500, "Database error", err.Error())
+			return nil, false
+		}
+	}
+	colorRgbs := make(map[int]string, len(colors))
+	for _, color := range colors {
+		colorRgbs[color.Id] = color.Rgb
+	}
+	productSkus := make(map[int][]OrderDetailProductSkuResponse)
+	productSet := make(map[int]struct{})
+	for _, item := range orderItems {
+		productId, ok := skuToProduct[item.Sku]
+		if !ok {
+			continue
+		}
+		sizeId := skuToSize[item.Sku]
+		colorId := skuToColor[item.Sku]
+		productSet[productId] = struct{}{}
+		productSkus[productId] = append(productSkus[productId], OrderDetailProductSkuResponse{
+			Sku:    item.Sku,
+			Amount: item.Amount,
+			Price:  item.Price,
+			Size: OrderDetailSizeResponse{
+				Id:   sizeId,
+				Name: sizeNames[sizeId],
+			},
+			Color: OrderDetailColorResponse{
+				Id:  colorId,
+				Rgb: colorRgbs[colorId],
+			},
+		})
+	}
+	productIds := make([]int, 0, len(productSet))
+	for id := range productSet {
+		productIds = append(productIds, id)
+	}
+
+	products := []model.Product{}
+	if err := database.DB.Where("id IN ?", productIds).Find(&products).Error; err != nil {
+		helper.ReponseErrorResponse(ctx, 500, "Database error", err.Error())
+		return nil, false
+	}
+
+	categorySet := make(map[int]struct{})
+	shopSet := make(map[int]struct{})
+	for _, product := range products {
+		categorySet[product.CategoryId] = struct{}{}
+		shopSet[product.ShopId] = struct{}{}
+	}
+	categoryIds := make([]int, 0, len(categorySet))
+	for id := range categorySet {
+		categoryIds = append(categoryIds, id)
+	}
+	shopIds := make([]int, 0, len(shopSet))
+	for id := range shopSet {
+		shopIds = append(shopIds, id)
+	}
+
+	categories := []model.Category{}
+	if len(categoryIds) > 0 {
+		if err := database.DB.Where("id IN ?", categoryIds).Find(&categories).Error; err != nil {
+			helper.ReponseErrorResponse(ctx, 500, "Database error", err.Error())
+			return nil, false
+		}
+	}
+	categoryNames := make(map[int]string, len(categories))
+	for _, category := range categories {
+		categoryNames[category.Id] = category.Name
+	}
+
+	shops := []model.Shop{}
+	if len(shopIds) > 0 {
+		if err := database.DB.Select("id", "name").Where("id IN ?", shopIds).Find(&shops).Error; err != nil {
+			helper.ReponseErrorResponse(ctx, 500, "Database error", err.Error())
+			return nil, false
+		}
+	}
+	shopNames := make(map[int]string, len(shops))
+	for _, shop := range shops {
+		shopNames[shop.Id] = shop.Name
+	}
+
+	responses := make([]OrderDetailProductResponse, 0, len(products))
+	for _, product := range products {
+		responses = append(responses, OrderDetailProductResponse{
+			Id:          product.Id,
+			Name:        product.Name,
+			ImageUrl:    product.ImageUrl,
+			Description: product.Description,
+			Rating:      product.Rating,
+			SoldAmount:  product.SoldAmount,
+			LikedAmount: product.LikedAmount,
+			Category: OrderDetailCategoryResponse{
+				Id:   product.CategoryId,
+				Name: categoryNames[product.CategoryId],
+			},
+			Shop: OrderDetailShopResponse{
+				Id:   product.ShopId,
+				Name: shopNames[product.ShopId],
+			},
+			Skus: productSkus[product.Id],
+		})
+	}
+	return responses, true
+}
+
 func buildOrderDetailsResponse(
 	order *model.Order,
 	user *model.User,
@@ -164,6 +330,7 @@ func buildOrderDetailsResponse(
 	payment *model.Payment,
 	shipper *model.Shipper,
 	shippingStates []model.ShippingState,
+	products []OrderDetailProductResponse,
 ) *OrderDetailResponse {
 	return &OrderDetailResponse{
 		Order: OrderDetailOrderResponse{
@@ -218,6 +385,7 @@ func buildOrderDetailsResponse(
 			ImageUrl:    shipper.ImageUrl,
 			PhoneNumber: shipper.PhoneNumber,
 		},
+		Products: products,
 	}
 }
 
@@ -267,8 +435,13 @@ func GetOrderDetails(ctx *gin.Context) {
 		helper.ReponseErrorResponse(ctx, 500, "Database error", stateErr.Error())
 		return
 	}
+	products, ok := getOrderProductsByOrderId(ctx, order.Id)
+	if !ok {
+		helper.ReponseErrorResponse(ctx, 500, "Database error", "")
+		return
+	}
 
-	response := buildOrderDetailsResponse(order, user, address, payment, shipper, shippingStates)
+	response := buildOrderDetailsResponse(order, user, address, payment, shipper, shippingStates, products)
 	helper.ResponseSuccessResponse(ctx, response)
 }
 

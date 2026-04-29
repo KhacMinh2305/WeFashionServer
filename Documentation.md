@@ -782,6 +782,213 @@
 }
 ```
 
+## 12. Order APIs
+
+### 12.1. Tạo đơn hàng mới và lấy link thanh toán
+- **Endpoint:** `POST /api/order/create`
+- **Header:** `Authorization: Bearer <token>`
+- **Body:**
+```json
+{
+  "discount": 10000,
+  "shipping_fee": 20000,
+  "total_price": 3768000,
+  "user_id": 12,
+  "address_id": 3,
+  "items": [
+    {
+      "sku": 6001,
+      "amount": 1,
+      "price": 1899000,
+      "product_id": 1,
+      "size_id": 2,
+      "color_id": 1
+    },
+    {
+      "sku": 4002,
+      "amount": 1,
+      "price": 1899000,
+      "product_id": 1,
+      "size_id": 3,
+      "color_id": 2
+    }
+  ]
+}
+```
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "order_id": 123,
+    "checkout_url": "https://pay.os.vn/web/v2/checkout/...",
+    "qr_code": "iVBORw0KGgoAAAANSUhEUgAAAQAAAAE..."
+  }
+}
+```
+
+### 12.2. Lấy chi tiết đơn hàng
+- **Endpoint:** `GET /api/order/:id/details`
+- **Header:** `Authorization: Bearer <token>`
+- **Response thành công:**
+```json
+{
+    "status_code": 200,
+    "time": "2026-04-29T23:51:30.3185631+07:00",
+    "data": {
+        "order": {
+            "id": 15,
+            "discount": 10000,
+            "shipping_fee": 20000,
+            "total_price": 3768000,
+            "order_state": 1,
+            "created_at": "2026-04-29T22:46:10.244461+07:00"
+        },
+        "user": {
+            "id": 12,
+            "name": "midas",
+            "avatar_url": "https://avatars.githubusercontent.com/u/100721386?v=4",
+            "email": "myebeauty9@gmail.com",
+            "phone_number": "",
+            "bio": ""
+        },
+        "shipping_states": [],
+        "address": {
+            "id": 3,
+            "name": "Nhà riêng",
+            "ward": "Phường 1",
+            "district": "Quận 3",
+            "city": "TP.HCM",
+            "detail": "123/45 Đường Lê Lợi",
+            "latitude": 10.762622,
+            "longitude": 106.660172,
+            "receiver_name": "Nguyễn Văn A",
+            "phone": "0909123456",
+            "is_default": true
+        },
+        "payment": {
+            "id": 1,
+            "created_at": "2026-04-29T22:46:33.966148+07:00",
+            "description": "WeFashion Payment",
+            "order_id": 15
+        },
+        "shipper": {
+            "id": 8,
+            "name": "Ngô Thị Hạnh",
+            "image_url": "https://randomuser.me/api/portraits/women/18.jpg",
+            "phone_number": "0902000008"
+        },
+        "products": [
+            {
+                "id": 1,
+                "name": "Calvin Klein Men's Boxer Briefs",
+                "image_url": "https://calvinklein.com/men-boxer.jpg",
+                "description": "Boxer nam Calvin Klein, cotton co giãn, thoáng khí.",
+                "rating": 4.8,
+                "sold_amount": 1200,
+                "liked_amount": 950,
+                "category": {
+                    "id": 7,
+                    "name": "Underwear"
+                },
+                "shop": {
+                    "id": 1,
+                    "name": "Uniqlo Official Store"
+                },
+                "skus": [
+                    {
+                        "sku": 6001,
+                        "amount": 1,
+                        "price": 1899000,
+                        "size": {
+                            "id": 2,
+                            "name": "S"
+                        },
+                        "color": {
+                            "id": 1,
+                            "rgb": "0,0,0"
+                        }
+                    },
+                    {
+                        "sku": 4002,
+                        "amount": 1,
+                        "price": 1899000,
+                        "size": {
+                            "id": 3,
+                            "name": "M"
+                        },
+                        "color": {
+                            "id": 2,
+                            "rgb": "255,255,255"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}
+```
+
+### 12.3. Lấy danh sách đơn hàng của user
+- **Endpoint:** `GET /api/order/user/:id`
+- **Header:** `Authorization: Bearer <token>`
+- **Response thành công:**
+```json
+{
+    "status_code": 200,
+    "time": "2026-04-30T00:13:44.1179074+07:00",
+    "data": {
+        "orders": [
+            {
+                "id": 15,
+                "discount": 10000,
+                "shipping_fee": 20000,
+                "total_price": 3768000,
+                "order_state": 1,
+                "shipping_state": -1,
+                "created_at": "2026-04-29T22:46:10.244461+07:00",
+                "user_id": 12,
+                "address_id": 3,
+                "payment_id": 1,
+                "shipper_id": 8,
+                "product_amount": 2
+            }
+        ]
+    }
+}
+```
+
+### 12.4. Webhook xác nhận thanh toán
+- **Endpoint:** `POST /api/order/payment/webhook`
+- **Mô tả:** Endpoint này do PayOS gọi đến để xác nhận một giao dịch đã thành công. Server sẽ xác thực chữ ký, cập nhật trạng thái đơn hàng, tạo record thanh toán và gửi email cho người dùng.
+- **Body (do PayOS gửi):**
+```json
+{
+  "code": "00",
+  "desc": "success",
+  "data": {
+    "orderCode": 123456,
+    "amount": 627000,
+    "description": "Thanh toan don hang #1",
+    "accountNumber": "...",
+    "reference": "...",
+    "transactionDateTime": "2026-04-29 10:05:00",
+    "paymentLinkId": "...",
+    "code": "00",
+    "desc": "success",
+    "counterAccountBankId": "...",
+    "counterAccountBankName": "...",
+    "counterAccountName": "...",
+    "counterAccountNumber": "...",
+    "virtualAccountName": null,
+    "virtualAccountNumber": null
+  },
+  "signature": "..."
+}
+```
+- **Lưu ý:** Endpoint này không yêu cầu `Authorization` header vì nó được gọi từ hệ thống của PayOS.
+
 
 ---
 - Tất cả các API đều yêu cầu token hợp lệ (JWT, truyền qua header Authorization).
