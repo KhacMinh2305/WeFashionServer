@@ -5,10 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"WeFashionServer/domain/repository"
 
 	"github.com/payOSHQ/payos-lib-golang/v2"
 )
@@ -100,19 +103,30 @@ func (p *PaymentRepositoryImpl) registerOrConfirmWebhook(ctx context.Context) {
 	}()
 }
 
-func (p *PaymentRepositoryImpl) CreatePaymentRequest() (*payos.CreatePaymentLinkResponse, error) {
+func (p *PaymentRepositoryImpl) CreatePaymentRequest(data repository.PaymentData) (*payos.CreatePaymentLinkResponse, error) {
 	if PayOsClient == nil || !initialized || !isReady {
 		return nil, errors.New("Client is not ready now")
 	}
 	paymentLink, err := PayOsClient.PaymentRequests.Create(context.Background(), payos.CreatePaymentLinkRequest{
-		OrderCode:   123,
-		Amount:      2000,
-		Description: "Payment ",
-		ReturnUrl:   "https://go.dev/",
-		CancelUrl:   "https://www.google.com/?hl=vi",
+		OrderCode:    230103 + data.OrderCode,
+		Amount:       data.Amount,
+		Description:  data.Description,
+		CancelUrl:    data.CancelUrl,
+		ReturnUrl:    data.ReturnUrl,
+		Items:        data.Items,
+		BuyerName:    data.BuyerName,
+		BuyerEmail:   data.BuyerEmail,
+		BuyerPhone:   data.BuyerPhone,
+		BuyerAddress: data.BuyerAddress,
 	})
 	if err != nil || paymentLink == nil {
+		fmt.Println("------------Error------------")
+		fmt.Println(err.Error())
 		return nil, errors.New("Create payment link failed")
 	}
 	return paymentLink, nil
+}
+
+func (p *PaymentRepositoryImpl) VerifyPayment(input map[string]interface{}) (interface{}, error) {
+	return PayOsClient.Webhooks.VerifyData(context.Background(), input)
 }

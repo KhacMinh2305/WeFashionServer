@@ -1,17 +1,21 @@
 package order
 
 import (
+	"WeFashionServer/di"
 	"WeFashionServer/domain/handler/authentication"
 	"WeFashionServer/domain/helper"
+	"WeFashionServer/domain/repository"
 	"WeFashionServer/infrastructure/database"
 	"WeFashionServer/infrastructure/model"
 	"errors"
 	"fmt"
 	"math/rand"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/payOSHQ/payos-lib-golang/v2"
 	"gorm.io/gorm"
 )
 
@@ -268,6 +272,24 @@ func GetOrderDetails(ctx *gin.Context) {
 
 func HandlePaymentWebhook(ctx *gin.Context) {
 	fmt.Println("----------------------------------------------------Receiver webhook----------------------------------------------------")
+	webhookData := map[string]interface{}{}
+	if err := ctx.ShouldBindJSON(&webhookData); err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	fmt.Println("--------------------payload--------------------")
+	fmt.Println(webhookData)
+	fmt.Println("-----------------------------------------------")
+
+	verifiedData, err := di.PaymentRepo.VerifyPayment(webhookData)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	fmt.Printf("verified webhook data: %+v\n", verifiedData)
+	helper.ResponseSuccessResponse(ctx, &verifiedData)
 }
 
 func validateOrderItem(item *OrderItem) (bool, string) {
@@ -353,6 +375,57 @@ func validateSkusExist(items []OrderItem) (bool, error) {
 	return true, nil
 }
 
+func getUniqueProductIds(items []OrderItem) []int {
+	productSet := make(map[int]struct{})
+	for _, item := range items {
+		if item.ProductId > 0 {
+			productSet[item.ProductId] = struct{}{}
+		}
+	}
+	productIds := make([]int, 0, len(productSet))
+	for id := range productSet {
+		productIds = append(productIds, id)
+	}
+	return productIds
+}
+
+func getProductNamesByIds(ctx *gin.Context, productIds []int) (map[int]string, bool) {
+	if len(productIds) == 0 {
+		return map[int]string{}, true
+	}
+	products := []model.Product{}
+	if err := database.DB.Select("id", "name").Where("id IN ?", productIds).Find(&products).Error; err != nil {
+		helper.ReponseErrorResponse(ctx, 500, "Database error", err.Error())
+		return nil, false
+	}
+	if len(products) != len(productIds) {
+		helper.ReponseErrorResponse(ctx, 404, "Product not found", "one or more product not found")
+		return nil, false
+	}
+	nameMap := make(map[int]string, len(products))
+	for _, product := range products {
+		nameMap[product.Id] = product.Name
+	}
+	return nameMap, true
+}
+
+func buildPaymentItems(ctx *gin.Context, items []OrderItem, productNames map[int]string) ([]payos.PaymentLinkItem, bool) {
+	paymentItems := make([]payos.PaymentLinkItem, 0, len(items))
+	for _, item := range items {
+		name, exist := productNames[item.ProductId]
+		if !exist {
+			helper.ReponseErrorResponse(ctx, 404, "Product not found", "one or more product not found")
+			return nil, false
+		}
+		paymentItems = append(paymentItems, payos.PaymentLinkItem{
+			Name:     name,
+			Quantity: item.Amount,
+			Price:    int(item.Price),
+		})
+	}
+	return paymentItems, true
+}
+
 func getRandomShipper(ctx *gin.Context) *model.Shipper {
 	shippers := []model.Shipper{}
 	if err := database.DB.Find(&shippers).Error; err != nil {
@@ -381,7 +454,8 @@ func CreateOrder(ctx *gin.Context) {
 		return
 	}
 
-	if getUserById(ctx, *userId) == nil {
+	user := getUserById(ctx, *userId)
+	if user == nil {
 		return
 	}
 
@@ -456,6 +530,39 @@ func CreateOrder(ctx *gin.Context) {
 		return
 	}
 
-	message := "Order successfully"
-	helper.ResponseSuccessResponse(ctx, &message)
+	productIds := getUniqueProductIds(req.Items)
+	productNames, ok := getProductNamesByIds(ctx, productIds)
+	if !ok {
+		return
+	}
+	paymentItems, ok := buildPaymentItems(ctx, req.Items, productNames)
+	if !ok {
+		return
+	}
+
+	buyerAddress := strings.Join([]string{address.City, address.District, address.Ward, address.Detail}, "-")
+	paymentData := repository.PaymentData{
+		OrderCode:    int64(order.Id),
+		Amount:       int(2000), /*req.TotalPrice*/
+		Description:  "WeFashion Payment",
+		CancelUrl:    "https://www.google.com/?hl=vi",
+		ReturnUrl:    "https://go.dev/",
+		Items:        paymentItems,
+		BuyerName:    &user.Name,
+		BuyerEmail:   &user.Email,
+		BuyerPhone:   &user.PhoneNumber,
+		BuyerAddress: &buyerAddress,
+	}
+
+	paymentLink, err := di.PaymentRepo.CreatePaymentRequest(paymentData)
+	if err != nil {
+		helper.ReponseErrorResponse(ctx, 500, "Create payment link failed", err.Error())
+		return
+	}
+
+	response := OrderPaymentLinkResponse{
+		CheckoutUrl: paymentLink.CheckoutUrl,
+		QrCode:      paymentLink.QrCode,
+	}
+	helper.ResponseSuccessResponse(ctx, &response)
 }

@@ -21,6 +21,11 @@ type OrderListByUserResponse struct {
 	Orders []OrderWithProductAmountResponse `json:"orders"`
 }
 
+type OrderPaymentLinkResponse struct {
+	CheckoutUrl string `json:"checkout_url"`
+	QrCode      string `json:"qr_code"`
+}
+
 type OrderDetailOrderResponse struct {
 	Id          int       `json:"id"`
 	Discount    float32   `json:"discount"`
