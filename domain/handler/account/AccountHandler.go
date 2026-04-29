@@ -7,11 +7,10 @@ import (
 	"WeFashionServer/domain/helper"
 	"WeFashionServer/infrastructure/database"
 	"WeFashionServer/infrastructure/model"
+	"WeFashionServer/utils"
 	"context"
 	"fmt"
 	"net/http"
-	"net/smtp"
-	"os"
 	"strings"
 	"time"
 
@@ -98,28 +97,6 @@ func isValidCode(code string) bool {
 		}
 	}
 	return true
-}
-
-func sendEmail(to, code string) error {
-	from := "doankhacminh2301@gmail.com"
-	password := os.Getenv("EAP")
-
-	host := "smtp.gmail.com"
-	port := "587"
-
-	subject := "WeFashion - Lấy lại tài khoản"
-	body := fmt.Sprintf("Mã xác thực của bạn là: %s", code)
-
-	msg := []byte("To: " + to + "\r\n" +
-		"Subject: " + subject + "\r\n" +
-		"Content-Type: text/plain; charset=\"UTF-8\"\r\n" +
-		"\r\n" +
-		body + "\r\n")
-
-	auth := smtp.PlainAuth("", from, password, host)
-
-	addr := host + ":" + port
-	return smtp.SendMail(addr, auth, from, []string{to}, msg)
 }
 
 // POST /api/account/register
@@ -265,7 +242,7 @@ func ForgotPassword(ctx *gin.Context) {
 		return
 	}
 	code := fmt.Sprintf("%04d", time.Now().UnixMilli()%10000)
-	if err := sendEmail(req.Email, code); err != nil {
+	if err := utils.SendVerificationEmail(req.Email, code); err != nil {
 		ctx.JSON(http.StatusInternalServerError, entity.ErrorResponse{
 			StatusCode: http.StatusInternalServerError,
 			Error:      "Send email failed",
