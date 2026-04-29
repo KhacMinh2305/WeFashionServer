@@ -24,7 +24,7 @@ import (
 func getUserById(ctx *gin.Context, userId int) *model.User {
 	user := model.User{}
 	if err := database.DB.Where("id = ?", userId).First(&user).Error; err != nil {
-		helper.ResponseDataNotFound(ctx, "User", "id", strconv.Itoa(userId))
+		fmt.Println("Get user %d failed !", userId)
 		return nil
 	}
 	return &user
@@ -497,8 +497,11 @@ func HandlePaymentWebhook(ctx *gin.Context) {
 	}
 
 	if err := utils.SendOrderPaidEmail(user.Email, orderCode, payment.CreatedAt); err != nil {
+		fmt.Println("Send email to %s failed !", user.Email)
 		fmt.Println(err.Error())
 	}
+
+	fmt.Println("All is done !")
 
 	fmt.Println("----------------------------------------------------Valid Webhook Done----------------------------------------------------")
 }
@@ -572,11 +575,14 @@ func getOrderForPaymentWebhook(orderCode int64) (*model.Order, bool) {
 	order := model.Order{}
 	if err := database.DB.Where("id = ?", orderId).First(&order).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			fmt.Println("Order id is: %d not found", orderId)
 			return nil, false
 		}
+		fmt.Println("Failed to find order with id: %d not found", orderId)
 		return nil, false
 	}
 	if order.OrderState == 1 {
+		fmt.Println("Order %d were updated!", orderId)
 		return nil, false
 	}
 	return &order, true
@@ -592,19 +598,24 @@ func createPaymentAndUpdateOrder(order *model.Order, description string) (*model
 
 	if err := database.DB.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(&payment).Error; err != nil {
+			fmt.Println("Created payment record failed !")
 			return err
 		}
+		fmt.Println("Created payment record successfully !")
 		if err := tx.Model(order).Updates(map[string]interface{}{
 			"order_state": 1,
 			"payment_id":  payment.Id,
 		}).Error; err != nil {
+			fmt.Println("Updated order state to confirmed failed !")
 			return err
 		}
+		fmt.Println("Updated order state to confirmed successfully !")
 		return nil
 	}); err != nil {
+		fmt.Println("Transaction is broken when trying to change order state !")
 		return nil, err
 	}
-
+	fmt.Println("All Update for order %d successfully !", order.Id)
 	return &payment, nil
 }
 
