@@ -7,6 +7,8 @@ import (
 	"WeFashionServer/domain/repository"
 	"WeFashionServer/infrastructure/database"
 	"WeFashionServer/infrastructure/model"
+	"WeFashionServer/utils"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -278,9 +280,11 @@ func HandlePaymentWebhook(ctx *gin.Context) {
 		return
 	}
 
-	fmt.Println("--------------------payload--------------------")
-	fmt.Println(webhookData)
-	fmt.Println("-----------------------------------------------")
+	// ignore "ping" request for the first time to avoid testing webhook of SDK
+	if checkTestWebhook(&webhookData) {
+		fmt.Println("This is a test webhook from SDK.")
+		return
+	}
 
 	verifiedData, err := di.PaymentRepo.VerifyPayment(webhookData)
 	if err != nil {
@@ -288,8 +292,163 @@ func HandlePaymentWebhook(ctx *gin.Context) {
 		return
 	}
 
-	fmt.Printf("verified webhook data: %+v\n", verifiedData)
-	helper.ResponseSuccessResponse(ctx, &verifiedData)
+	fmt.Println("Verify webhook data valid")
+
+	fmt.Println("--------------------Verified data--------------------")
+	fmt.Println(verifiedData)
+	fmt.Println("-----------------------------------------------")
+
+	orderCode, description, ok := extractVerifiedPaymentData(verifiedData)
+	if !ok {
+		fmt.Println("Error parse verified data")
+		return
+	}
+
+	order, shouldContinue := getOrderForPaymentWebhook(orderCode)
+	if !shouldContinue {
+		fmt.Println("Get order failed")
+		return
+	}
+
+	payment, err := createPaymentAndUpdateOrder(order, description)
+	if err != nil {
+		fmt.Println("Database error")
+		return
+	}
+
+	// send email to user to notice user order is confirmed
+	user := getUserById(ctx, order.UserId)
+	if user == nil {
+		fmt.Println("Get user failed")
+		return
+	}
+
+	if err := utils.SendOrderPaidEmail(user.Email, orderCode, payment.CreatedAt); err != nil {
+		fmt.Println(err.Error())
+	}
+
+	fmt.Println("----------------------------------------------------Valid Webhook Done----------------------------------------------------")
+}
+
+func mapVerifiedPaymentData(verifiedData interface{}) (*repository.PaymentCofirmationData, bool) {
+	verifiedMap, ok := verifiedData.(map[string]interface{})
+	if !ok {
+		return nil, false
+	}
+	verifiedDataRaw, ok := verifiedMap["data"]
+	if !ok {
+		return nil, false
+	}
+	verifiedDataBytes, err := json.Marshal(verifiedDataRaw)
+	if err != nil {
+		return nil, false
+	}
+	verifiedDataModel := repository.PaymentCofirmationData{}
+	if err := json.Unmarshal(verifiedDataBytes, &verifiedDataModel); err != nil {
+		return nil, false
+	}
+	return &verifiedDataModel, true
+}
+
+func extractVerifiedPaymentData(verifiedData interface{}) (int64, string, bool) {
+	verifiedMap, ok := verifiedData.(map[string]interface{})
+	if !ok {
+		return 0, "", false
+	}
+	orderCodeVal, ok := verifiedMap["orderCode"]
+	if !ok {
+		return 0, "", false
+	}
+	orderCode, ok := parseOrderCode(orderCodeVal)
+	if !ok {
+		return 0, "", false
+	}
+	description, _ := verifiedMap["description"].(string)
+	if description == "" {
+		return 0, "", false
+	}
+	return orderCode, description, true
+}
+
+func parseOrderCode(value interface{}) (int64, bool) {
+	switch v := value.(type) {
+	case float64:
+		return int64(v), true
+	case float32:
+		return int64(v), true
+	case int:
+		return int64(v), true
+	case int64:
+		return v, true
+	case string:
+		parsed, err := strconv.ParseInt(v, 10, 64)
+		if err != nil {
+			return 0, false
+		}
+		return parsed, true
+	default:
+		return 0, false
+	}
+}
+
+func getOrderForPaymentWebhook(orderCode int64) (*model.Order, bool) {
+	orderId, err := di.PaymentRepo.ResolveOrderIdFromOderCode(orderCode)
+	if err != nil {
+		return nil, false
+	}
+	order := model.Order{}
+	if err := database.DB.Where("id = ?", orderId).First(&order).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, false
+		}
+		return nil, false
+	}
+	if order.OrderState == 1 {
+		return nil, false
+	}
+	return &order, true
+}
+
+func createPaymentAndUpdateOrder(order *model.Order, description string) (*model.Payment, error) {
+	payment := model.Payment{
+		CreatedAt:   time.Now(),
+		Description: description,
+		OrderId:     order.Id,
+		UserId:      order.UserId,
+	}
+
+	if err := database.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&payment).Error; err != nil {
+			return err
+		}
+		if err := tx.Model(order).Updates(map[string]interface{}{
+			"order_state": 1,
+			"payment_id":  payment.Id,
+		}).Error; err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return &payment, nil
+}
+
+func checkTestWebhook(body *map[string]interface{}) bool {
+	data, ok := (*body)["data"].(map[string]interface{})
+	if !ok {
+		return false
+	}
+
+	orderCodeVal, ok := data["orderCode"].(float64)
+	if !ok {
+		return false
+	}
+	orderCode := int64(orderCodeVal)
+	accountNumber, _ := data["accountNumber"].(string)
+	paymentLinkId, _ := data["paymentLinkId"].(string)
+	return orderCode == 123 && accountNumber == "12345678" && paymentLinkId == "124c33293c43417ab7879e14c8d9eb18"
 }
 
 func validateOrderItem(item *OrderItem) (bool, string) {
@@ -371,6 +530,34 @@ func validateSkusExist(items []OrderItem) (bool, error) {
 	}
 	if len(variants) != len(skuList) {
 		return false, nil
+	}
+	return true, nil
+}
+
+func validateSkusInStock(items []OrderItem) (bool, error) {
+	skuSet := make(map[int]struct{})
+	for _, item := range items {
+		skuSet[item.Sku] = struct{}{}
+	}
+	if len(skuSet) == 0 {
+		return false, nil
+	}
+	skuList := make([]int, 0, len(skuSet))
+	for sku := range skuSet {
+		skuList = append(skuList, sku)
+	}
+	variants := []model.ProductVariant{}
+	if err := database.DB.Select("sku", "amount").Where("sku IN ?", skuList).Find(&variants).Error; err != nil {
+		return false, err
+	}
+	stockBySku := make(map[int]int, len(variants))
+	for _, variant := range variants {
+		stockBySku[variant.Sku] = variant.Amount
+	}
+	for _, item := range items {
+		if stockBySku[item.Sku] < item.Amount {
+			return false, nil
+		}
 	}
 	return true, nil
 }
@@ -484,6 +671,13 @@ func CreateOrder(ctx *gin.Context) {
 		return
 	} else if !ok {
 		helper.ReponseErrorResponse(ctx, 404, "Sku not found", "one or more sku not found")
+		return
+	}
+	if ok, err := validateSkusInStock(req.Items); err != nil {
+		helper.ReponseErrorResponse(ctx, 500, "Database error", err.Error())
+		return
+	} else if !ok {
+		helper.ReponseErrorResponse(ctx, 400, "Sku not enough stock", "sku does not have enough stock, please check again")
 		return
 	}
 

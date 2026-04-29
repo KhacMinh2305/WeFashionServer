@@ -48,4 +48,5 @@ type PaymentRepository interface {
 	Initialize()
 	CreatePaymentRequest(data PaymentData) (*payos.CreatePaymentLinkResponse, error)
 	VerifyPayment(input map[string]interface{}) (interface{}, error)
+	ResolveOrderIdFromOderCode(orderCode int64) (int, error)
 }

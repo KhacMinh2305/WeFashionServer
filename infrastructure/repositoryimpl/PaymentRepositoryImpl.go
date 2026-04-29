@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"WeFashionServer/domain/repository"
@@ -42,6 +43,14 @@ func getCheckSumKey() string {
 
 func getWebhook() string {
 	return os.Getenv("PAYOS_WEBHOOK")
+}
+
+func getOrderCodePrefix() int64 {
+	num, err := strconv.Atoi(os.Getenv("PAYOS_ORDER_CODE_PREFIX"))
+	if err != nil {
+		return 0
+	}
+	return int64(num)
 }
 
 func (p *PaymentRepositoryImpl) Initialize() {
@@ -108,7 +117,7 @@ func (p *PaymentRepositoryImpl) CreatePaymentRequest(data repository.PaymentData
 		return nil, errors.New("Client is not ready now")
 	}
 	paymentLink, err := PayOsClient.PaymentRequests.Create(context.Background(), payos.CreatePaymentLinkRequest{
-		OrderCode:    230103 + data.OrderCode,
+		OrderCode:    getOrderCodePrefix() + data.OrderCode,
 		Amount:       data.Amount,
 		Description:  data.Description,
 		CancelUrl:    data.CancelUrl,
@@ -129,4 +138,12 @@ func (p *PaymentRepositoryImpl) CreatePaymentRequest(data repository.PaymentData
 
 func (p *PaymentRepositoryImpl) VerifyPayment(input map[string]interface{}) (interface{}, error) {
 	return PayOsClient.Webhooks.VerifyData(context.Background(), input)
+}
+
+func (p *PaymentRepositoryImpl) ResolveOrderIdFromOderCode(orderCode int64) (int, error) {
+	orderId := int64(orderCode) - getOrderCodePrefix()
+	if orderId <= 0 {
+		return 0, errors.New("Invalid order id")
+	}
+	return int(orderId), nil
 }
