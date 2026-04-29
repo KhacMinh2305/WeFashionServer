@@ -1,24 +1,54 @@
 package utils
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 )
 
 func sendEmail(to, title, emailBody string) error {
+	type EmailContent struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	}
+	type EmailAddress struct {
+		Email string `json:"email"`
+	}
+	type Personalization struct {
+		To []EmailAddress `json:"to"`
+	}
+	type FromAddress struct {
+		Email string `json:"email"`
+		Name  string `json:"name"`
+	}
+	type Payload struct {
+		Personalizations []Personalization `json:"personalizations"`
+		From             FromAddress       `json:"from"`
+		Subject          string            `json:"subject"`
+		Content          []EmailContent    `json:"content"`
+	}
 
-	payload := fmt.Sprintf(`{
-        "personalizations": [{"to": [{"email": "%s"}]}],
-        "from": {"email": "%s", "name": "WeFashion"},
-        "subject": %s,
-        "content": [{"type": "text/plain", "value": "%s"}]
-    }`, to, os.Getenv("SENDGRID_FROM_EMAIL"), title, emailBody)
+	payload := Payload{
+		Personalizations: []Personalization{
+			{To: []EmailAddress{{Email: to}}},
+		},
+		From:    FromAddress{Email: os.Getenv("SENDGRID_FROM_EMAIL"), Name: "WeFashion"},
+		Subject: title,
+		Content: []EmailContent{
+			{Type: "text/plain", Value: emailBody},
+		},
+	}
 
-	req, err := http.NewRequest("POST", "https://api.sendgrid.com/v3/mail/send", strings.NewReader(payload))
+	jsonBytes, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", "https://api.sendgrid.com/v3/mail/send", bytes.NewReader(jsonBytes))
 	if err != nil {
 		return err
 	}

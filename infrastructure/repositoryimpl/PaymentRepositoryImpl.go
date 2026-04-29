@@ -48,7 +48,7 @@ func getWebhook() string {
 func getOrderCodePrefix() int64 {
 	num, err := strconv.Atoi(os.Getenv("PAYOS_ORDER_CODE_PREFIX"))
 	if err != nil {
-		fmt.Println("Get prefix code failed %s", err.Error())
+		fmt.Printf("Get prefix code failed %s\n", err.Error())
 		return 0
 	}
 	return int64(num)
@@ -146,6 +146,6 @@ func (p *PaymentRepositoryImpl) ResolveOrderIdFromOderCode(orderCode int64) (int
 	if orderId <= 0 {
 		return 0, errors.New("Invalid order id")
 	}
-	fmt.Println("Order id is: %d", orderId)
+	fmt.Printf("Order id is: %d\n", orderId)
 	return int(orderId), nil
 }
