@@ -12,7 +12,7 @@
 # vendor/
 
 # Go modules
-/go.sum
+# /go.sum
 
 # IDE/editor files
 .idea/
