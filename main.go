@@ -36,7 +36,7 @@ func main() {
 	di.PaymentRepo.Initialize()
 
 	if err := di.Router.Run("0.0.0.0:" + port); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+		log.Fatalf("Failed to start server for port: %v", err)
 	}
 }
 
