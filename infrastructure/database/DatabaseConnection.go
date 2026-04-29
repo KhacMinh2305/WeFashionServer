@@ -3,10 +3,8 @@ package database
 import (
 	"WeFashionServer/infrastructure/model"
 	"fmt"
-	"log"
 	"os"
 
-	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -43,40 +41,18 @@ func initTables() error {
 }
 
 func Connect() error {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-		return err
-	}
 
-	envMode := os.Getenv("ENV")
-
-	var (
-		host     string
-		port     string
-		user     string
-		password string
-		dbName   string
-	)
-
-	if envMode == "prod" {
-		host = os.Getenv("DB_HOST_PROD")
-		port = os.Getenv("DB_PORT_PROD")
-		user = os.Getenv("DB_USER_PROD")
-		password = os.Getenv("DB_PASSWORD_PROD")
-		dbName = os.Getenv("DB_NAME_PROD")
-	} else {
-		host = os.Getenv("DB_HOST_DEV")
-		port = os.Getenv("DB_PORT_DEV")
-		user = os.Getenv("DB_USER_DEV")
-		password = os.Getenv("DB_PASSWORD_DEV")
-		dbName = os.Getenv("DB_NAME_DEV")
-	}
+	host := os.Getenv("DB_HOST_PROD")
+	port := os.Getenv("DB_PORT_PROD")
+	user := os.Getenv("DB_USER_PROD")
+	password := os.Getenv("DB_PASSWORD_PROD")
+	dbName := os.Getenv("DB_NAME_PROD")
 
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
 		host, user, password, dbName, port)
 
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	DB = db
 	if err != nil {
 		return err
 	}

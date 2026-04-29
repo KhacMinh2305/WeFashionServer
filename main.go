@@ -15,17 +15,29 @@ import (
 	"WeFashionServer/presentation/route/search"
 	"WeFashionServer/presentation/route/shop"
 	"WeFashionServer/presentation/route/user"
+	"log"
+	"os"
 )
 
 func main() {
 
-	database.Connect()
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	if dbErr := database.Connect(); dbErr != nil {
+		log.Fatalf("Failed to connect to database: %v", dbErr)
+		return
+	}
 
 	registerRoutes()
 
 	di.PaymentRepo.Initialize()
 
-	di.Router.Run(":8080")
+	if err := di.Router.Run("0.0.0.0:" + port); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }
 
 func registerRoutes() {
