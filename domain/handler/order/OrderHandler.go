@@ -489,19 +489,23 @@ func HandlePaymentWebhook(ctx *gin.Context) {
 		return
 	}
 
-	// send email to user to notice user order is confirmed
-	user := getUserById(ctx, order.UserId)
-	if user == nil {
-		fmt.Println("Get user failed")
-		return
-	}
-
-	if err := utils.SendOrderPaidEmail(user.Email, orderCode, payment.CreatedAt); err != nil {
-		fmt.Printf("Send email to %s failed!\n", user.Email)
-		fmt.Println(err.Error())
-	}
-
 	ctx.JSON(http.StatusOK, gin.H{})
+
+	// send email to user to notice user order is confirmed
+	go func() {
+		user := getUserById(ctx, order.UserId)
+		if user == nil {
+			fmt.Println("Get user failed")
+			return
+		}
+
+		if err := utils.SendOrderPaidEmail(user.Email, orderCode, payment.CreatedAt); err != nil {
+			fmt.Printf("Send email to %s failed!\n", user.Email)
+			fmt.Println(err.Error())
+			return
+		}
+		fmt.Println("Send email success !")
+	}()
 
 	fmt.Println("All is done !")
 
