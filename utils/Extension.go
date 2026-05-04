@@ -76,6 +76,12 @@ func SendVerificationEmail(to, code string) error {
 	return sendEmail(to, title, body)
 }
 
+func SendResetPasswordEmail(to, password string) error {
+	title := "WeFashion - Đặt lại mật khẩu"
+	body := fmt.Sprintf("Mật khẩu mới của bạn là: %s", password)
+	return sendEmail(to, title, body)
+}
+
 func SendOrderPaidEmail(to string, orderCode int64, paidAt time.Time) error {
 	title := "WeFashion - Xac nhan thanh toan"
 	emailBody := fmt.Sprintf(

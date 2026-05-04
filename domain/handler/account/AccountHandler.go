@@ -9,7 +9,9 @@ import (
 	"WeFashionServer/infrastructure/model"
 	"WeFashionServer/utils"
 	"context"
+	"crypto/rand"
 	"fmt"
+	"math/big"
 	"net/http"
 	"strings"
 	"time"
@@ -97,6 +99,21 @@ func isValidCode(code string) bool {
 		}
 	}
 	return true
+}
+
+func generateRandomDigits(length int) (string, error) {
+	if length <= 0 {
+		return "", fmt.Errorf("length must be positive")
+	}
+	result := make([]byte, length)
+	for i := 0; i < length; i++ {
+		n, err := rand.Int(rand.Reader, big.NewInt(10))
+		if err != nil {
+			return "", err
+		}
+		result[i] = byte('0' + n.Int64())
+	}
+	return string(result), nil
 }
 
 // POST /api/account/register
@@ -329,6 +346,52 @@ func ValidateCode(ctx *gin.Context) {
 	} else {
 		isValid = true
 		detail = "Correct code"
+	}
+
+	if isValid {
+		newPassword, genErr := generateRandomDigits(10)
+		if genErr != nil {
+			ctx.JSON(http.StatusInternalServerError, entity.ErrorResponse{
+				StatusCode: http.StatusInternalServerError,
+				Error:      "Generate password failed",
+				Detail:     genErr.Error(),
+			})
+			return
+		}
+		hashed, hashErr := hash(newPassword)
+		if hashErr != nil {
+			ctx.JSON(http.StatusInternalServerError, entity.ErrorResponse{
+				StatusCode: http.StatusInternalServerError,
+				Error:      "Hash password failed",
+				Detail:     hashErr.Error(),
+			})
+			return
+		}
+		var account model.Account
+		if err := database.DB.Where("username = ?", user.Name).First(&account).Error; err != nil {
+			ctx.JSON(http.StatusNotFound, entity.ErrorResponse{
+				StatusCode: http.StatusNotFound,
+				Error:      "Account not found",
+				Detail:     "Account for this user does not exist.",
+			})
+			return
+		}
+		if err := database.DB.Model(&account).Update("password", hashed).Error; err != nil {
+			ctx.JSON(http.StatusInternalServerError, entity.ErrorResponse{
+				StatusCode: http.StatusInternalServerError,
+				Error:      "Update password failed",
+				Detail:     err.Error(),
+			})
+			return
+		}
+		if err := utils.SendResetPasswordEmail(user.Email, newPassword); err != nil {
+			ctx.JSON(http.StatusInternalServerError, entity.ErrorResponse{
+				StatusCode: http.StatusInternalServerError,
+				Error:      "Send reset password email failed",
+				Detail:     err.Error(),
+			})
+			return
+		}
 	}
 
 	ctx.JSON(http.StatusOK, entity.SuccessReponse[map[string]interface{}]{
