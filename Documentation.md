@@ -990,6 +990,50 @@
 - **Lưu ý:** Endpoint này không yêu cầu `Authorization` header vì nó được gọi từ hệ thống của PayOS.
 
 
+## 13. Search APIs
+
+### 13.1. Tìm kiếm sản phẩm và shop
+- **Endpoint:** `GET /api/search`
+- **Header:** `Authorization: Bearer <token>`
+- **Query:** 
+  - `query`: Chuỗi tìm kiếm (tùy chọn, mặc định rỗng). Tìm kiếm tên/mô tả sản phẩm, tên/bio shop.
+  - `limit`: Số lượng kết quả tối đa cho mỗi loại (tùy chọn, mặc định 10).
+- **Response thành công:**
+```json
+{
+  "status_code": 200,
+  "time": "...",
+  "data": {
+    "products": [
+      {
+        "id": 1,
+        "name": "...",
+        "image_url": "...",
+        "description": "...",
+        "rating": 4.5,
+        "sold_amount": 100,
+        "liked_amount": 50,
+        "category_id": 1,
+        "shop_id": 1
+      }
+    ],
+    "shops": [
+      {
+        "id": 1,
+        "name": "...",
+        "avatar_url": "...",
+        "email": "...",
+        "phone_number": "...",
+        "bio": "...",
+        "rate_amount": 10,
+        "rating": 4.5,
+        "followers": 100
+      }
+    ]
+  }
+}
+```
+
 ---
 - Tất cả các API đều yêu cầu token hợp lệ (JWT, truyền qua header Authorization).
 - Response lỗi dạng:

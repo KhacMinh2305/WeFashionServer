@@ -46,7 +46,7 @@ type CartProduct struct {
 	Rating      float32          `json:"rating"`
 	SoldAmount  int              `json:"sold_amount"`
 	LikedAmount int              `json:"liked_amount"`
-	Category    CartCategory     `json:"category"`
+	Category    CartCategory     `json:"category" gorm:"embedded;embeddedPrefix:category__"`
 	Skus        []CartProductSku `json:"skus" gorm:"-"`
 }
 

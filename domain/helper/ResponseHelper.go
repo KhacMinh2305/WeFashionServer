@@ -41,6 +41,15 @@ func ReponseErrorResponse(ctx *gin.Context, code int, err, detail string) {
 }
 
 func ResponseSuccessResponse[T any](ctx *gin.Context, data *T) {
+	if data == nil {
+		var zero T
+		ctx.JSON(http.StatusOK, entity.SuccessReponse[T]{
+			StatusCode: http.StatusOK,
+			Time:       time.Now(),
+			Data:       zero,
+		})
+		return
+	}
 	ctx.JSON(http.StatusOK, entity.SuccessReponse[T]{
 		StatusCode: http.StatusOK,
 		Time:       time.Now(),
