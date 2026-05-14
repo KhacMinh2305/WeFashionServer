@@ -930,8 +930,8 @@ func CreateOrder(ctx *gin.Context) {
 		OrderCode:    int64(order.Id),
 		Amount:       int(2000), /*req.TotalPrice*/
 		Description:  "WeFashion Payment",
-		CancelUrl:    "https://www.google.com/?hl=vi",
-		ReturnUrl:    "https://go.dev/",
+		CancelUrl:    "https://wefashionserver.onrender.com/api/order/redirect-result",
+		ReturnUrl:    "https://wefashionserver.onrender.com/api/order/redirect-result",
 		Items:        paymentItems,
 		BuyerName:    &user.Name,
 		BuyerEmail:   &user.Email,
