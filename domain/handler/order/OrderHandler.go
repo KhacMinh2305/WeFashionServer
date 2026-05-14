@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -949,4 +950,21 @@ func CreateOrder(ctx *gin.Context) {
 		QrCode:      paymentLink.QrCode,
 	}
 	helper.ResponseSuccessResponse(ctx, &response)
+}
+
+func GetDeepLinkConfig(ctx *gin.Context) {
+	content, err := os.ReadFile("assetlinks.json")
+	if err != nil {
+		helper.ReponseErrorResponse(ctx, http.StatusNoContent, "", "")
+		return
+	}
+	ctx.Data(
+		http.StatusOK,
+		"application/json",
+		content,
+	)
+}
+
+func VisitPaymentResult(ctx *gin.Context) {
+	helper.ResponseSuccessResponse[interface{}](ctx, nil)
 }

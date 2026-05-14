@@ -12,4 +12,8 @@ func RegisterOrderRoutes() {
 	// webhooks
 	di.Router.POST("/api/order/payment/webhook", order.HandlePaymentWebhook)
 	// di.Router.GET("/api/order/payment/webhook", order.HandlePaymentWebhook)
+
+	// client AppLink
+	di.Router.GET(".well-known/assetlinks.json", order.GetDeepLinkConfig)
+	di.Router.GET("api/order/redirect-result", order.VisitPaymentResult)
 }
