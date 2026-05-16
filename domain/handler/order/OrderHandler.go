@@ -946,6 +946,7 @@ func CreateOrder(ctx *gin.Context) {
 	}
 
 	response := OrderPaymentLinkResponse{
+		OrderId:     order.Id,
 		CheckoutUrl: paymentLink.CheckoutUrl,
 		QrCode:      paymentLink.QrCode,
 	}
