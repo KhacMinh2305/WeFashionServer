@@ -22,7 +22,7 @@ type OrderListByUserResponse struct {
 }
 
 type OrderPaymentLinkResponse struct {
-	OrderId     int    `json:"order_id`
+	OrderId     int    `json:"order_id"`
 	CheckoutUrl string `json:"checkout_url"`
 	QrCode      string `json:"qr_code"`
 }
