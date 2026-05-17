@@ -665,7 +665,7 @@ func validateOrderItem(item *OrderItem) (bool, string) {
 }
 
 func validateOrderRequestBody(req *OrderRequestBody) (bool, string) {
-	if req.Discount <= 0 {
+	if req.Discount < 0 {
 		return false, "discount must be a positive number"
 	}
 	if req.ShippingFee <= 0 {
