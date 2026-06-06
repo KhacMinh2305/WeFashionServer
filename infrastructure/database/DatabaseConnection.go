@@ -40,18 +40,33 @@ func initTables() error {
 	return tableErr
 }
 
+/*
+Fix database migration from Render to Neon.
+*/
 func Connect() error {
 
+	var dsn = os.Getenv("DATABASE_URL")
+	var db *gorm.DB
+	var err error
+
+	// try to use DATABASE_URL firstly,
+	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err == nil {
+		DB = db
+		return initTables()
+	}
+
+	// back up with manual setup
 	host := os.Getenv("DB_HOST_PROD")
 	port := os.Getenv("DB_PORT_PROD")
 	user := os.Getenv("DB_USER_PROD")
 	password := os.Getenv("DB_PASSWORD_PROD")
 	dbName := os.Getenv("DB_NAME_PROD")
 
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+	dsn = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=require",
 		host, user, password, dbName, port)
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	DB = db
 	if err != nil {
 		return err
