@@ -939,8 +939,11 @@ func CreateOrder(ctx *gin.Context) {
 		BuyerAddress: &buyerAddress,
 	}
 
+	fmt.Println("Start create payment link for order id:", order.Id)
+
 	paymentLink, err := di.PaymentRepo.CreatePaymentRequest(paymentData)
 	if err != nil {
+		fmt.Println("Create payment link for order id failed: ", err)
 		helper.ReponseErrorResponse(ctx, 500, "Create payment link failed", err.Error())
 		return
 	}
